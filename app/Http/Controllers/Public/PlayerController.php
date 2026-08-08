@@ -5,12 +5,26 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\Level;
 use App\Models\Player;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class PlayerController extends Controller
 {
+    public function me(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        $player = Player::firstOrCreate(['user_id' => $user->id], ['club_id' => $user->club_id]);
+
+        if (! $user->hasRole('player')) {
+            $user->assignRole('player');
+        }
+
+        return redirect()->route('public.players.show', $player->id);
+    }
+
     public function ranking(Request $request): Response
     {
         $query = Player::with(['user', 'club'])->orderByDesc('rating_current');

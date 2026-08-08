@@ -36,6 +36,7 @@ class TournamentMatch extends Model
         'loser_entrant_id',
         'status',
         'table_number',
+        'referee_id',
         'scheduled_at',
         'completed_at',
         'score_summary',
@@ -84,6 +85,11 @@ class TournamentMatch extends Model
     public function loserEntrant(): BelongsTo
     {
         return $this->belongsTo(TournamentRegistrationDivision::class, 'loser_entrant_id');
+    }
+
+    public function referee(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'referee_id');
     }
 
     public function entrant1SourceMatch(): BelongsTo

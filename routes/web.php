@@ -1,12 +1,16 @@
 <?php
 
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\DivisionController;
+use App\Http\Controllers\DivisionTemplateController;
 use App\Http\Controllers\DrawController;
+use App\Http\Controllers\FormTemplateController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MatchResultController;
 use App\Http\Controllers\MatchScoringController;
 use App\Http\Controllers\PdfController;
 use App\Http\Controllers\Public\MatchController as PublicMatchController;
+use App\Http\Controllers\RefereeController;
 use App\Http\Controllers\Public\PlayerController as PublicPlayerController;
 use App\Http\Controllers\Public\TournamentController as PublicTournamentController;
 use App\Http\Controllers\TournamentController;
@@ -53,6 +57,10 @@ Route::middleware(['auth'])->group(function () {
         ->name('tournaments.divisions.matches.undo');
     Route::post('tournaments/{tournament}/divisions/{division}/matches/{match}/walkover', [MatchScoringController::class, 'walkover'])
         ->name('tournaments.divisions.matches.walkover');
+    Route::patch('tournaments/{tournament}/divisions/{division}/matches/{match}/referee', [MatchScoringController::class, 'assignReferee'])
+        ->name('tournaments.divisions.matches.referee');
+
+    Route::get('scoring', [RefereeController::class, 'index'])->name('referee.index');
 
     Route::get('tournaments/{tournament}/pdf/schedule', [PdfController::class, 'schedule'])
         ->name('tournaments.pdf.schedule');
@@ -62,6 +70,20 @@ Route::middleware(['auth'])->group(function () {
         ->name('tournaments.divisions.matches.pdf.scorecard');
     Route::get('tournaments/{tournament}/divisions/{division}/entrants/{entrant}/pdf/certificate', [PdfController::class, 'certificate'])
         ->name('tournaments.divisions.entrants.pdf.certificate');
+
+    Route::get('profile/me', [PublicPlayerController::class, 'me'])->name('profile.me');
+
+    Route::get('admin/users', [AdminUserController::class, 'index'])->name('admin.users.index');
+    Route::patch('admin/users/{user}/roles', [AdminUserController::class, 'updateRoles'])->name('admin.users.roles.update');
+
+    Route::resource('plantillas/categorias', DivisionTemplateController::class)
+        ->except(['show'])
+        ->parameters(['categorias' => 'divisionTemplate'])
+        ->names('templates.divisions');
+    Route::resource('plantillas/formularios', FormTemplateController::class)
+        ->except(['show'])
+        ->parameters(['formularios' => 'formTemplate'])
+        ->names('templates.forms');
 });
 
 require __DIR__.'/settings.php';

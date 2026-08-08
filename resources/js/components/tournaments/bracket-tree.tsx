@@ -1,5 +1,5 @@
 import { MatchCard } from '@/components/tournaments/match-card';
-import { type BracketMatch, type RoundStage } from '@/types';
+import { type BracketMatch, type RefereeOption, type RoundStage } from '@/types';
 import { motion } from 'framer-motion';
 
 const STAGE_LABELS: Record<RoundStage, string> = {
@@ -18,11 +18,13 @@ export function BracketTree({
     tournamentId,
     divisionId,
     canScore,
+    referees,
 }: {
     matches: BracketMatch[];
     tournamentId: number;
     divisionId: number;
     canScore: boolean;
+    referees?: RefereeOption[];
 }) {
     const stages = STAGE_ORDER.filter((stage) => matches.some((m) => m.stage === stage));
     let cardIndex = 0;
@@ -56,8 +58,14 @@ export function BracketTree({
                                                     <MatchCard
                                                         match={match}
                                                         canScore={canScore}
+                                                        referees={referees}
                                                         scoreRoute={route('tournaments.divisions.matches.score', [tournamentId, divisionId, match.id])}
                                                         scorecardRoute={route('tournaments.divisions.matches.pdf.scorecard', [
+                                                            tournamentId,
+                                                            divisionId,
+                                                            match.id,
+                                                        ])}
+                                                        refereeRoute={route('tournaments.divisions.matches.referee', [
                                                             tournamentId,
                                                             divisionId,
                                                             match.id,

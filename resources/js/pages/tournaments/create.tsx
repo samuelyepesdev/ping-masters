@@ -1,6 +1,7 @@
+import { PrerequisiteModal, type PrerequisiteItem } from '@/components/prerequisite-modal';
 import { TournamentForm } from '@/components/tournaments/tournament-form';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, type DivisionTemplate, type FormTemplate } from '@/types';
 import { Head } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -8,7 +9,13 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Nuevo torneo', href: '/tournaments/create' },
 ];
 
-export default function CreateTournament() {
+interface Props {
+    divisionTemplates: DivisionTemplate[];
+    formTemplates: FormTemplate[];
+    missingPrerequisites: PrerequisiteItem[];
+}
+
+export default function CreateTournament({ divisionTemplates, formTemplates, missingPrerequisites }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Nuevo torneo" />
@@ -17,8 +24,11 @@ export default function CreateTournament() {
                     <h1 className="text-2xl font-bold tracking-tight">Crear torneo</h1>
                     <p className="text-muted-foreground">Configura los datos generales, las categorías y el formulario de inscripción.</p>
                 </div>
-                <TournamentForm />
+                {missingPrerequisites.length === 0 && (
+                    <TournamentForm divisionTemplates={divisionTemplates} formTemplates={formTemplates} />
+                )}
             </div>
+            <PrerequisiteModal items={missingPrerequisites} backUrl="/tournaments" />
         </AppLayout>
     );
 }

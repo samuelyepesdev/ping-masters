@@ -4,7 +4,7 @@ import { StandingsTable } from '@/components/tournaments/standings-table';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type BracketMatch, type StandingRow, type Tournament, type TournamentDivision } from '@/types';
+import { type BreadcrumbItem, type BracketMatch, type RefereeOption, type StandingRow, type Tournament, type TournamentDivision } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { Award, FileDown, Shuffle } from 'lucide-react';
 
@@ -23,9 +23,10 @@ interface Props {
     groupsStandings: Record<number, StandingRow[]>;
     divisionStandings: StandingRow[] | null;
     swissRoundsGenerated: number;
+    referees: RefereeOption[];
 }
 
-export default function DivisionShow({ tournament, division, matches, groupsStandings, divisionStandings, swissRoundsGenerated }: Props) {
+export default function DivisionShow({ tournament, division, matches, groupsStandings, divisionStandings, swissRoundsGenerated, referees }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Torneos', href: '/tournaments' },
         { title: tournament.name, href: `/tournaments/${tournament.id}` },
@@ -120,7 +121,7 @@ export default function DivisionShow({ tournament, division, matches, groupsStan
                 )}
 
                 {division.status !== 'pending_draw' && (division.format === 'single_elimination' || division.format === 'double_elimination') && (
-                    <BracketTree matches={matches} tournamentId={tournament.id} divisionId={division.id} canScore />
+                    <BracketTree matches={matches} tournamentId={tournament.id} divisionId={division.id} canScore referees={referees} />
                 )}
 
                 {division.status !== 'pending_draw' && (division.format === 'round_robin' || division.format === 'swiss') && (
@@ -137,8 +138,14 @@ export default function DivisionShow({ tournament, division, matches, groupsStan
                                                 key={match.id}
                                                 match={match}
                                                 canScore
+                                                referees={referees}
                                                 scoreRoute={route('tournaments.divisions.matches.score', [tournament.id, division.id, match.id])}
                                                 scorecardRoute={route('tournaments.divisions.matches.pdf.scorecard', [
+                                                    tournament.id,
+                                                    division.id,
+                                                    match.id,
+                                                ])}
+                                                refereeRoute={route('tournaments.divisions.matches.referee', [
                                                     tournament.id,
                                                     division.id,
                                                     match.id,
@@ -180,12 +187,18 @@ export default function DivisionShow({ tournament, division, matches, groupsStan
                                                             key={match.id}
                                                             match={match}
                                                             canScore
+                                                            referees={referees}
                                                             scoreRoute={route('tournaments.divisions.matches.score', [
                                                                 tournament.id,
                                                                 division.id,
                                                                 match.id,
                                                             ])}
                                                             scorecardRoute={route('tournaments.divisions.matches.pdf.scorecard', [
+                                                                tournament.id,
+                                                                division.id,
+                                                                match.id,
+                                                            ])}
+                                                            refereeRoute={route('tournaments.divisions.matches.referee', [
                                                                 tournament.id,
                                                                 division.id,
                                                                 match.id,
@@ -206,6 +219,7 @@ export default function DivisionShow({ tournament, division, matches, groupsStan
                                 tournamentId={tournament.id}
                                 divisionId={division.id}
                                 canScore
+                                referees={referees}
                             />
                         </div>
                     </div>

@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { type RegistrationFieldType } from '@/types';
+import { type FormTemplate, type RegistrationFieldType } from '@/types';
 import { DndContext, type DragEndEvent, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -51,12 +51,26 @@ export function newField(): DraftRegistrationField {
     };
 }
 
+function draftFieldFromTemplateField(field: NonNullable<FormTemplate['fields']>[number]): DraftRegistrationField {
+    return {
+        key: crypto.randomUUID(),
+        label: field.label,
+        field_type: field.field_type,
+        options: field.options ?? [],
+        placeholder: field.placeholder ?? '',
+        help_text: field.help_text ?? '',
+        is_required: field.is_required,
+    };
+}
+
 export function RegistrationFormBuilder({
     fields,
     onChange,
+    templates = [],
 }: {
     fields: DraftRegistrationField[];
     onChange: (fields: DraftRegistrationField[]) => void;
+    templates?: FormTemplate[];
 }) {
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
@@ -77,19 +91,42 @@ export function RegistrationFormBuilder({
         onChange(fields.filter((f) => f.key !== key));
     }
 
+    function loadTemplate(templateId: string) {
+        const template = templates.find((t) => t.id === Number(templateId));
+        if (!template) return;
+        if (fields.length > 0 && !confirm('Esto reemplazará los campos actuales del formulario. ¿Continuar?')) return;
+        onChange((template.fields ?? []).map(draftFieldFromTemplateField));
+    }
+
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                     <h3 className="text-lg font-semibold">Formulario de inscripción</h3>
                     <p className="text-sm text-muted-foreground">
                         Agrega los campos que los jugadores deberán responder al inscribirse en este torneo.
                     </p>
                 </div>
-                <Button type="button" onClick={() => onChange([...fields, newField()])}>
-                    <Plus className="size-4" />
-                    Agregar campo
-                </Button>
+                <div className="flex gap-2">
+                    {templates.length > 0 && (
+                        <Select value="" onValueChange={loadTemplate}>
+                            <SelectTrigger className="w-56">
+                                <SelectValue placeholder="Cargar plantilla..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {templates.map((template) => (
+                                    <SelectItem key={template.id} value={String(template.id)}>
+                                        {template.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
+                    <Button type="button" onClick={() => onChange([...fields, newField()])}>
+                        <Plus className="size-4" />
+                        Agregar campo
+                    </Button>
+                </div>
             </div>
 
             {fields.length === 0 && (

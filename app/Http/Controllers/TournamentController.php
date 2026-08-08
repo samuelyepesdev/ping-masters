@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ChecksPrerequisites;
+use App\Models\DivisionTemplate;
+use App\Models\FormTemplate;
 use App\Models\Tournament;
 use App\Models\TournamentRegistrationField;
+use App\Support\Prerequisite;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -11,6 +15,8 @@ use Inertia\Response;
 
 class TournamentController extends Controller
 {
+    use ChecksPrerequisites;
+
     public function index(Request $request): Response
     {
         $this->authorize('viewAny', Tournament::class);
@@ -27,11 +33,29 @@ class TournamentController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
         $this->authorize('create', Tournament::class);
 
-        return Inertia::render('tournaments/create');
+        $templates = $this->templateProps($request);
+
+        return Inertia::render('tournaments/create', [
+            ...$templates,
+            'missingPrerequisites' => $this->missingPrerequisites(
+                Prerequisite::make(
+                    $templates['divisionTemplates']->isNotEmpty(),
+                    'Plantilla de categoría',
+                    'No tienes plantillas de categoría creadas. Debes crear al menos una antes de poder crear un torneo.',
+                    route('templates.divisions.create'),
+                ),
+                Prerequisite::make(
+                    $templates['formTemplates']->isNotEmpty(),
+                    'Plantilla de formulario',
+                    'No tienes plantillas de formulario de inscripción creadas. Debes crear al menos una antes de poder crear un torneo.',
+                    route('templates.forms.create'),
+                ),
+            ),
+        ]);
     }
 
     public function store(Request $request)
@@ -86,7 +110,7 @@ class TournamentController extends Controller
         ]);
     }
 
-    public function edit(Tournament $tournament): Response
+    public function edit(Request $request, Tournament $tournament): Response
     {
         $this->authorize('update', $tournament);
 
@@ -94,6 +118,7 @@ class TournamentController extends Controller
 
         return Inertia::render('tournaments/edit', [
             'tournament' => $tournament,
+            ...$this->templateProps($request),
         ]);
     }
 
@@ -250,6 +275,24 @@ class TournamentController extends Controller
                 $tournament->registrationFields()->create($data);
             }
         }
+    }
+
+    private function templateProps(Request $request): array
+    {
+        $divisionTemplates = DivisionTemplate::when(
+            ! $request->user()->isSuperAdmin(),
+            fn ($q) => $q->where('created_by', $request->user()->id),
+        )->orderBy('name')->get();
+
+        $formTemplates = FormTemplate::with('fields')->when(
+            ! $request->user()->isSuperAdmin(),
+            fn ($q) => $q->where('created_by', $request->user()->id),
+        )->orderBy('name')->get();
+
+        return [
+            'divisionTemplates' => $divisionTemplates,
+            'formTemplates' => $formTemplates,
+        ];
     }
 
     private function uniqueSlug(string $name): string

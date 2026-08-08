@@ -37,6 +37,7 @@ export interface User {
     email_verified_at: string | null;
     roles: string[];
     club_id: number | null;
+    club?: Club | null;
     created_at: string;
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
@@ -126,6 +127,48 @@ export interface TournamentRegistrationField {
     help_text: string | null;
     is_required: boolean;
     display_order: number;
+    [key: string]: unknown;
+}
+
+export interface DivisionTemplate {
+    id: number;
+    created_by: number;
+    name: string;
+    category_type: DivisionCategoryType;
+    gender_category: DivisionGenderCategory;
+    min_age: number | null;
+    max_age: number | null;
+    format: DivisionFormat;
+    best_of: number;
+    points_to_win: number;
+    group_size: number | null;
+    advance_per_group: number | null;
+    swiss_rounds: number | null;
+    max_participants: number | null;
+    seed_by_rating: boolean;
+    [key: string]: unknown;
+}
+
+export interface FormTemplateField {
+    id: number;
+    form_template_id: number;
+    label: string;
+    field_type: RegistrationFieldType;
+    options: string[] | null;
+    placeholder: string | null;
+    help_text: string | null;
+    is_required: boolean;
+    display_order: number;
+    [key: string]: unknown;
+}
+
+export interface FormTemplate {
+    id: number;
+    created_by: number;
+    name: string;
+    description: string | null;
+    fields?: FormTemplateField[];
+    fields_count?: number;
     [key: string]: unknown;
 }
 
@@ -225,7 +268,14 @@ export interface BracketMatch {
     entrant2_name: string;
     status: MatchStatus;
     winner_entrant_id: number | null;
+    referee_id: number | null;
+    referee_name: string | null;
     [key: string]: unknown;
+}
+
+export interface RefereeOption {
+    id: number;
+    name: string;
 }
 
 export interface StandingRow {

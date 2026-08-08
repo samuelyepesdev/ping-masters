@@ -1,9 +1,15 @@
 import { TournamentForm } from '@/components/tournaments/tournament-form';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Tournament } from '@/types';
+import { type BreadcrumbItem, type DivisionTemplate, type FormTemplate, type Tournament } from '@/types';
 import { Head } from '@inertiajs/react';
 
-export default function EditTournament({ tournament }: { tournament: Tournament }) {
+interface Props {
+    tournament: Tournament;
+    divisionTemplates: DivisionTemplate[];
+    formTemplates: FormTemplate[];
+}
+
+export default function EditTournament({ tournament, divisionTemplates, formTemplates }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Torneos', href: '/tournaments' },
         { title: tournament.name, href: `/tournaments/${tournament.id}` },
@@ -18,7 +24,7 @@ export default function EditTournament({ tournament }: { tournament: Tournament 
                     <h1 className="text-2xl font-bold tracking-tight">Editar torneo</h1>
                     <p className="text-muted-foreground">{tournament.name}</p>
                 </div>
-                <TournamentForm tournament={tournament} />
+                <TournamentForm tournament={tournament} divisionTemplates={divisionTemplates} formTemplates={formTemplates} />
             </div>
         </AppLayout>
     );

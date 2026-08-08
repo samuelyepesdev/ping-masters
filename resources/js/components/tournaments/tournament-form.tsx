@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { type Tournament, type TournamentStatus } from '@/types';
+import { type DivisionTemplate, type FormTemplate, type Tournament, type TournamentStatus } from '@/types';
 import { type FormDataConvertible } from '@inertiajs/core';
 import { useForm } from '@inertiajs/react';
 import { Check } from 'lucide-react';
@@ -72,7 +72,15 @@ function draftFieldFromModel(f: NonNullable<Tournament['registration_fields']>[n
     };
 }
 
-export function TournamentForm({ tournament }: { tournament?: Tournament }) {
+export function TournamentForm({
+    tournament,
+    divisionTemplates = [],
+    formTemplates = [],
+}: {
+    tournament?: Tournament;
+    divisionTemplates?: DivisionTemplate[];
+    formTemplates?: FormTemplate[];
+}) {
     const isEdit = !!tournament;
     const [step, setStep] = useState(1);
 
@@ -259,13 +267,21 @@ export function TournamentForm({ tournament }: { tournament?: Tournament }) {
 
             {step === 2 && (
                 <div>
-                    <DivisionEditor divisions={data.divisions} onChange={(divisions) => setData('divisions', divisions)} />
+                    <DivisionEditor
+                        divisions={data.divisions}
+                        onChange={(divisions) => setData('divisions', divisions)}
+                        templates={divisionTemplates}
+                    />
                     <InputError message={errors.divisions as string | undefined} className="mt-2" />
                 </div>
             )}
 
             {step === 3 && (
-                <RegistrationFormBuilder fields={data.registration_fields} onChange={(fields) => setData('registration_fields', fields)} />
+                <RegistrationFormBuilder
+                    fields={data.registration_fields}
+                    onChange={(fields) => setData('registration_fields', fields)}
+                    templates={formTemplates}
+                />
             )}
 
             <div className="flex items-center justify-between border-t pt-4">

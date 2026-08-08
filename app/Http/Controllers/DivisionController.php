@@ -9,6 +9,7 @@ use App\Services\Brackets\StandingsService;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\Permission\Models\Role;
 
 class DivisionController extends Controller
 {
@@ -28,7 +29,7 @@ class DivisionController extends Controller
             ->mapWithKeys(fn (TournamentRegistrationDivision $e) => [$e->id => $this->entrantLabel($e, false)]);
 
         $matches = $division->matches()
-            ->with(['entrant1', 'entrant2', 'round', 'group'])
+            ->with(['entrant1', 'entrant2', 'round', 'group', 'referee'])
             ->orderBy('match_number')
             ->get()
             ->map(fn ($m) => [
@@ -46,6 +47,8 @@ class DivisionController extends Controller
                 'entrant2_name' => $this->entrantLabel($m->entrant2, $m->entrant2_is_bye),
                 'status' => $m->status,
                 'winner_entrant_id' => $m->winner_entrant_id,
+                'referee_id' => $m->referee_id,
+                'referee_name' => $m->referee?->name,
             ]);
 
         $groupsStandings = [];
@@ -59,6 +62,9 @@ class DivisionController extends Controller
 
         $swissRoundsGenerated = $division->rounds->where('stage', 'swiss')->count();
 
+        $refereeRole = Role::findByName('referee', 'web');
+        $referees = $refereeRole->users()->get(['users.id', 'users.name']);
+
         return Inertia::render('tournaments/divisions/show', [
             'tournament' => $tournament,
             'division' => $division,
@@ -66,6 +72,7 @@ class DivisionController extends Controller
             'groupsStandings' => $groupsStandings,
             'divisionStandings' => $divisionStandings,
             'swissRoundsGenerated' => $swissRoundsGenerated,
+            'referees' => $referees,
         ]);
     }
 

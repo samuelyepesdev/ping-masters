@@ -1,22 +1,33 @@
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { type BracketMatch } from '@/types';
-import { Link } from '@inertiajs/react';
+import { type BracketMatch, type RefereeOption } from '@/types';
+import { Link, router } from '@inertiajs/react';
 import { FileDown, Radio, Trophy } from 'lucide-react';
 
 export function MatchCard({
     match,
     scoreRoute,
     scorecardRoute,
+    refereeRoute,
+    referees,
     canScore,
 }: {
     match: BracketMatch;
     scoreRoute: string;
     scorecardRoute?: string;
+    refereeRoute?: string;
+    referees?: RefereeOption[];
     canScore: boolean;
 }) {
     const isDone = match.status === 'completed' || match.status === 'walkover';
     const isPlayable = match.status === 'ready' || match.status === 'in_progress';
+    const canAssignReferee = refereeRoute && referees && referees.length > 0 && (match.status === 'ready' || match.status === 'in_progress');
+
+    function assignReferee(value: string) {
+        if (!refereeRoute) return;
+        router.patch(refereeRoute, { referee_id: value === 'none' ? null : value }, { preserveScroll: true, preserveState: true });
+    }
 
     return (
         <div className="w-64 rounded-lg border bg-card p-2.5 shadow-sm">
@@ -31,6 +42,22 @@ export function MatchCard({
                         {match.status === 'in_progress' ? 'En vivo' : 'Iniciar partido'}
                     </Link>
                 </Button>
+            )}
+
+            {canAssignReferee && (
+                <Select value={match.referee_id ? String(match.referee_id) : 'none'} onValueChange={assignReferee}>
+                    <SelectTrigger className="mt-2 h-7 text-xs">
+                        <SelectValue placeholder="Sin árbitro" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="none">Sin árbitro</SelectItem>
+                        {referees!.map((referee) => (
+                            <SelectItem key={referee.id} value={String(referee.id)}>
+                                {referee.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             )}
 
             {isDone && scorecardRoute && (

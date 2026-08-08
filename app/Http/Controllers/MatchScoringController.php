@@ -24,7 +24,7 @@ class MatchScoringController extends Controller
 
     public function show(Tournament $tournament, TournamentDivision $division, TournamentMatch $match): Response
     {
-        $this->authorize('update', $tournament);
+        $this->authorize('score', $match);
         $this->assertBelongs($tournament, $division, $match);
 
         return Inertia::render('scoring/console', [
@@ -41,7 +41,7 @@ class MatchScoringController extends Controller
         TournamentMatch $match,
         MatchScoringService $scoring,
     ): RedirectResponse {
-        $this->authorize('update', $tournament);
+        $this->authorize('score', $match);
         $this->assertBelongs($tournament, $division, $match);
 
         $validated = $request->validate([
@@ -66,7 +66,7 @@ class MatchScoringController extends Controller
         TournamentMatch $match,
         MatchScoringService $scoring,
     ): RedirectResponse {
-        $this->authorize('update', $tournament);
+        $this->authorize('score', $match);
         $this->assertBelongs($tournament, $division, $match);
 
         $validated = $request->validate([
@@ -96,7 +96,7 @@ class MatchScoringController extends Controller
         TournamentMatch $match,
         MatchScoringService $scoring,
     ): RedirectResponse {
-        $this->authorize('update', $tournament);
+        $this->authorize('score', $match);
         $this->assertBelongs($tournament, $division, $match);
 
         try {
@@ -117,7 +117,7 @@ class MatchScoringController extends Controller
         TournamentMatch $match,
         MatchScoringService $scoring,
     ): RedirectResponse {
-        $this->authorize('update', $tournament);
+        $this->authorize('score', $match);
         $this->assertBelongs($tournament, $division, $match);
 
         $validated = $request->validate([
@@ -134,6 +134,24 @@ class MatchScoringController extends Controller
         $this->broadcastState($match->fresh());
 
         return back();
+    }
+
+    public function assignReferee(
+        Request $request,
+        Tournament $tournament,
+        TournamentDivision $division,
+        TournamentMatch $match,
+    ): RedirectResponse {
+        $this->authorize('assignReferee', $match);
+        $this->assertBelongs($tournament, $division, $match);
+
+        $validated = $request->validate([
+            'referee_id' => 'nullable|integer|exists:users,id',
+        ]);
+
+        $match->update(['referee_id' => $validated['referee_id'] ?? null]);
+
+        return back()->with('success', 'Árbitro actualizado.');
     }
 
     private function assertBelongs(Tournament $tournament, TournamentDivision $division, TournamentMatch $match): void
