@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TournamentMatch extends Model
 {
@@ -93,6 +94,16 @@ class TournamentMatch extends Model
     public function entrant2SourceMatch(): BelongsTo
     {
         return $this->belongsTo(self::class, 'entrant2_source_match_id');
+    }
+
+    public function games(): HasMany
+    {
+        return $this->hasMany(MatchGame::class, 'match_id')->orderBy('game_number');
+    }
+
+    public function currentGame(): ?MatchGame
+    {
+        return $this->games()->whereNull('completed_at')->reorder('game_number', 'desc')->first();
     }
 
     public function isBye(): bool

@@ -81,7 +81,7 @@ export default function DivisionShow({ tournament, division, matches, groupsStan
                 )}
 
                 {division.status !== 'pending_draw' && (division.format === 'single_elimination' || division.format === 'double_elimination') && (
-                    <BracketTree matches={matches} tournamentId={tournament.id} divisionId={division.id} canRecordResult />
+                    <BracketTree matches={matches} tournamentId={tournament.id} divisionId={division.id} canScore />
                 )}
 
                 {division.status !== 'pending_draw' && (division.format === 'round_robin' || division.format === 'swiss') && (
@@ -97,8 +97,8 @@ export default function DivisionShow({ tournament, division, matches, groupsStan
                                             <MatchCard
                                                 key={match.id}
                                                 match={match}
-                                                canRecordResult
-                                                resultRoute={route('tournaments.divisions.matches.result', [tournament.id, division.id, match.id])}
+                                                canScore
+                                                scoreRoute={route('tournaments.divisions.matches.score', [tournament.id, division.id, match.id])}
                                             />
                                         ))}
                                     </div>
@@ -135,8 +135,8 @@ export default function DivisionShow({ tournament, division, matches, groupsStan
                                                         <MatchCard
                                                             key={match.id}
                                                             match={match}
-                                                            canRecordResult
-                                                            resultRoute={route('tournaments.divisions.matches.result', [
+                                                            canScore
+                                                            scoreRoute={route('tournaments.divisions.matches.score', [
                                                                 tournament.id,
                                                                 division.id,
                                                                 match.id,
@@ -156,7 +156,7 @@ export default function DivisionShow({ tournament, division, matches, groupsStan
                                 matches={matches.filter((m) => m.stage === 'main_bracket')}
                                 tournamentId={tournament.id}
                                 divisionId={division.id}
-                                canRecordResult
+                                canScore
                             />
                         </div>
                     </div>

@@ -16,12 +16,12 @@ export function BracketTree({
     matches,
     tournamentId,
     divisionId,
-    canRecordResult,
+    canScore,
 }: {
     matches: BracketMatch[];
     tournamentId: number;
     divisionId: number;
-    canRecordResult: boolean;
+    canScore: boolean;
 }) {
     const stages = STAGE_ORDER.filter((stage) => matches.some((m) => m.stage === stage));
 
@@ -45,8 +45,8 @@ export function BracketTree({
                                             <MatchCard
                                                 key={match.id}
                                                 match={match}
-                                                canRecordResult={canRecordResult}
-                                                resultRoute={route('tournaments.divisions.matches.result', [tournamentId, divisionId, match.id])}
+                                                canScore={canScore}
+                                                scoreRoute={route('tournaments.divisions.matches.score', [tournamentId, divisionId, match.id])}
                                             />
                                         ))}
                                     </div>

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Player extends Model
@@ -55,6 +56,26 @@ class Player extends Model
     public function tournamentRegistrations(): HasMany
     {
         return $this->hasMany(TournamentRegistration::class);
+    }
+
+    public function ratingHistory(): HasMany
+    {
+        return $this->hasMany(PlayerRatingHistory::class)->orderBy('created_at');
+    }
+
+    public function xpEvents(): HasMany
+    {
+        return $this->hasMany(PlayerXpEvent::class);
+    }
+
+    public function playerAchievements(): HasMany
+    {
+        return $this->hasMany(PlayerAchievement::class);
+    }
+
+    public function achievements(): BelongsToMany
+    {
+        return $this->belongsToMany(Achievement::class, 'player_achievements')->withPivot('unlocked_at');
     }
 
     public function winRate(): float

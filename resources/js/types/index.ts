@@ -215,6 +215,36 @@ export interface StandingRow {
     [key: string]: unknown;
 }
 
+export interface MatchGameState {
+    id: number;
+    game_number: number;
+    entrant1_points: number;
+    entrant2_points: number;
+    winner_entrant_id: number | null;
+    first_server_entrant_id: number | null;
+}
+
+export interface MatchScoreState {
+    id: number;
+    status: MatchStatus;
+    entrant1_id: number | null;
+    entrant2_id: number | null;
+    entrant1_name: string;
+    entrant2_name: string;
+    best_of: number;
+    points_to_win: number;
+    score_summary: string | null;
+    winner_entrant_id: number | null;
+    games: MatchGameState[];
+    current_game_number: number | null;
+    current_server_entrant_id: number | null;
+    expedite_active: boolean;
+    expedite_seconds_remaining: number | null;
+    is_deciding_game: boolean;
+    deciding_game_ends_switched: boolean;
+    [key: string]: unknown;
+}
+
 export interface PaginatedData<T> {
     data: T[];
     current_page: number;

@@ -3,6 +3,8 @@
 use App\Http\Controllers\DivisionController;
 use App\Http\Controllers\DrawController;
 use App\Http\Controllers\MatchResultController;
+use App\Http\Controllers\MatchScoringController;
+use App\Http\Controllers\Public\MatchController as PublicMatchController;
 use App\Http\Controllers\Public\TournamentController as PublicTournamentController;
 use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\TournamentRegistrationController;
@@ -15,6 +17,7 @@ Route::get('/', function () {
 
 Route::get('torneos', [PublicTournamentController::class, 'index'])->name('public.tournaments.index');
 Route::get('torneos/{tournament:slug}', [PublicTournamentController::class, 'show'])->name('public.tournaments.show');
+Route::get('partidos/{match}', [PublicMatchController::class, 'show'])->name('public.matches.show');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', function () {
@@ -36,6 +39,17 @@ Route::middleware(['auth'])->group(function () {
         ->name('tournaments.divisions.swiss-next-round');
     Route::patch('tournaments/{tournament}/divisions/{division}/matches/{match}/result', [MatchResultController::class, 'update'])
         ->name('tournaments.divisions.matches.result');
+
+    Route::get('tournaments/{tournament}/divisions/{division}/matches/{match}/score', [MatchScoringController::class, 'show'])
+        ->name('tournaments.divisions.matches.score');
+    Route::post('tournaments/{tournament}/divisions/{division}/matches/{match}/start', [MatchScoringController::class, 'start'])
+        ->name('tournaments.divisions.matches.start');
+    Route::post('tournaments/{tournament}/divisions/{division}/matches/{match}/point', [MatchScoringController::class, 'point'])
+        ->name('tournaments.divisions.matches.point');
+    Route::post('tournaments/{tournament}/divisions/{division}/matches/{match}/undo', [MatchScoringController::class, 'undo'])
+        ->name('tournaments.divisions.matches.undo');
+    Route::post('tournaments/{tournament}/divisions/{division}/matches/{match}/walkover', [MatchScoringController::class, 'walkover'])
+        ->name('tournaments.divisions.matches.walkover');
 });
 
 require __DIR__.'/settings.php';

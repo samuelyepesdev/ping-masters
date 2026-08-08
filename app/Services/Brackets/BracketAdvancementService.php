@@ -136,13 +136,13 @@ class BracketAdvancementService
      * Record a match result (used by the temporary admin test action in Milestone 3, and
      * reused as-is by the live scoring engine in Milestone 4).
      */
-    public function recordResult(TournamentMatch $match, int $winnerEntrantId): void
+    public function recordResult(TournamentMatch $match, int $winnerEntrantId, string $status = 'completed'): void
     {
         $loserEntrantId = $match->entrant1_id === $winnerEntrantId ? $match->entrant2_id : $match->entrant1_id;
 
         $match->winner_entrant_id = $winnerEntrantId;
         $match->loser_entrant_id = $loserEntrantId;
-        $match->status = 'completed';
+        $match->status = $status;
         $match->completed_at = now();
         $match->save();
 
@@ -155,6 +155,11 @@ class BracketAdvancementService
                 $this->maybeAdvanceGroupStage($group);
             }
         }
+    }
+
+    public function recordWalkover(TournamentMatch $match, int $winnerEntrantId): void
+    {
+        $this->recordResult($match, $winnerEntrantId, 'walkover');
     }
 
     public function isDivisionComplete(TournamentDivision $division): bool
