@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useInitials } from '@/hooks/use-initials';
 import SmartLayout from '@/layouts/smart-layout';
+import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type PaginatedData, type Player } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { Sparkles } from 'lucide-react';
+import { Crown, Search, Sparkles } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 export default function PlayerRanking({ players, filters }: { players: PaginatedData<Player>; filters: { search?: string } }) {
@@ -21,6 +22,7 @@ export default function PlayerRanking({ players, filters }: { players: Paginated
 
     const startRank = (players.current_page - 1) * players.per_page;
     const breadcrumbs: BreadcrumbItem[] = [{ title: 'Ranking', href: '/ranking' }];
+    const showPodium = !filters.search && players.current_page === 1 && players.data.length > 0;
 
     return (
         <SmartLayout breadcrumbs={breadcrumbs}>
@@ -30,8 +32,11 @@ export default function PlayerRanking({ players, filters }: { players: Paginated
                 <p className="text-muted-foreground">Clasificación por rating ELO.</p>
             </div>
 
-            <form onSubmit={submit} className="mb-4 max-w-sm">
-                <Input placeholder="Buscar jugador..." value={search} onChange={(e) => setSearch(e.target.value)} />
+            {showPodium && <Podium players={players.data.slice(0, 3)} getInitials={getInitials} />}
+
+            <form onSubmit={submit} className="relative mb-4 max-w-sm">
+                <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input placeholder="Buscar jugador..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
             </form>
 
             <div className="rounded-xl border">
@@ -48,27 +53,43 @@ export default function PlayerRanking({ players, filters }: { players: Paginated
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {players.data.map((player, index) => (
-                            <TableRow key={player.id}>
-                                <TableCell className="text-muted-foreground">{startRank + index + 1}</TableCell>
-                                <TableCell>
-                                    <Link href={route('public.players.show', player.id)} className="flex items-center gap-2 hover:underline">
-                                        <Avatar className="size-8">
-                                            <AvatarFallback className="text-xs">{getInitials(player.user?.name ?? '?')}</AvatarFallback>
-                                        </Avatar>
-                                        <span className="font-medium">{player.user?.name}</span>
-                                        {player.is_elite && <Sparkles className="size-3.5 text-amber-500" />}
-                                    </Link>
-                                </TableCell>
-                                <TableCell className="text-sm text-muted-foreground">{player.club?.name ?? '—'}</TableCell>
-                                <TableCell className="text-right">
-                                    <Badge variant="secondary">Nv. {player.level}</Badge>
-                                </TableCell>
-                                <TableCell className="text-right font-semibold tabular-nums">{player.rating_current}</TableCell>
-                                <TableCell className="text-right tabular-nums">{player.matches_played}</TableCell>
-                                <TableCell className="text-right tabular-nums">{player.matches_played > 0 ? `${((player.matches_won / player.matches_played) * 100).toFixed(0)}%` : '—'}</TableCell>
-                            </TableRow>
-                        ))}
+                        {players.data.map((player, index) => {
+                            const rank = startRank + index + 1;
+
+                            return (
+                                <TableRow key={player.id}>
+                                    <TableCell
+                                        className={cn(
+                                            'font-semibold tabular-nums',
+                                            rank === 1 && 'text-amber-500',
+                                            rank === 2 && 'text-slate-400',
+                                            rank === 3 && 'text-orange-500',
+                                            rank > 3 && 'text-muted-foreground',
+                                        )}
+                                    >
+                                        {rank}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Link href={route('public.players.show', player.id)} className="flex items-center gap-2 hover:underline">
+                                            <Avatar className="size-8">
+                                                <AvatarFallback className="text-xs">{getInitials(player.user?.name ?? '?')}</AvatarFallback>
+                                            </Avatar>
+                                            <span className="font-medium">{player.user?.name}</span>
+                                            {player.is_elite && <Sparkles className="size-3.5 text-amber-500" />}
+                                        </Link>
+                                    </TableCell>
+                                    <TableCell className="text-sm text-muted-foreground">{player.club?.name ?? '—'}</TableCell>
+                                    <TableCell className="text-right">
+                                        <Badge variant="secondary">Nv. {player.level}</Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right font-semibold tabular-nums">{player.rating_current}</TableCell>
+                                    <TableCell className="text-right tabular-nums">{player.matches_played}</TableCell>
+                                    <TableCell className="text-right tabular-nums">
+                                        {player.matches_played > 0 ? `${((player.matches_won / player.matches_played) * 100).toFixed(0)}%` : '—'}
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
                         {players.data.length === 0 && (
                             <TableRow>
                                 <TableCell colSpan={7} className="text-center text-sm text-muted-foreground">
@@ -84,5 +105,49 @@ export default function PlayerRanking({ players, filters }: { players: Paginated
                 <Pagination data={players} />
             </div>
         </SmartLayout>
+    );
+}
+
+function Podium({ players, getInitials }: { players: Player[]; getInitials: (name: string) => string }) {
+    const [first, second, third] = players;
+
+    return (
+        <div className="mb-8 grid grid-cols-3 items-end gap-3 sm:gap-4">
+            {second ? <PodiumCard player={second} rank={2} getInitials={getInitials} /> : <div />}
+            <PodiumCard player={first} rank={1} getInitials={getInitials} />
+            {third ? <PodiumCard player={third} rank={3} getInitials={getInitials} /> : <div />}
+        </div>
+    );
+}
+
+const PODIUM_STYLES: Record<1 | 2 | 3, string> = {
+    1: 'border-amber-400/60 bg-gradient-to-b from-amber-400/20 via-amber-400/5 to-transparent',
+    2: 'border-slate-400/50 bg-gradient-to-b from-slate-400/15 via-slate-400/5 to-transparent',
+    3: 'border-orange-400/50 bg-gradient-to-b from-orange-400/15 via-orange-400/5 to-transparent',
+};
+
+function PodiumCard({ player, rank, getInitials }: { player: Player; rank: 1 | 2 | 3; getInitials: (name: string) => string }) {
+    const isFirst = rank === 1;
+
+    return (
+        <Link
+            href={route('public.players.show', player.id)}
+            className={cn(
+                'flex flex-col items-center gap-2 rounded-2xl border-2 px-3 pb-5 text-center transition-transform hover:-translate-y-0.5',
+                PODIUM_STYLES[rank],
+                isFirst ? 'pt-8' : 'pt-6',
+            )}
+        >
+            {isFirst && <Crown className="size-5 text-amber-500" />}
+            <Avatar className={isFirst ? 'size-20' : 'size-14'}>
+                <AvatarFallback className={isFirst ? 'text-lg' : 'text-sm'}>{getInitials(player.user?.name ?? '?')}</AvatarFallback>
+            </Avatar>
+            <div>
+                <p className={cn('font-semibold', isFirst ? 'text-lg' : 'text-sm')}>{player.user?.name}</p>
+                <p className="text-xs text-muted-foreground">
+                    #{rank} · {player.rating_current}
+                </p>
+            </div>
+        </Link>
     );
 }
