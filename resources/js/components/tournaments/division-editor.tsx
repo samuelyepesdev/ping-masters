@@ -4,12 +4,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Link } from '@inertiajs/react';
 import { type DivisionCategoryType, type DivisionFormat, type DivisionGenderCategory, type DivisionTemplate } from '@/types';
-import { Plus, Trash2 } from 'lucide-react';
+import { LayoutTemplate, Trash2 } from 'lucide-react';
 
 export interface DraftDivision {
     key: string;
     id?: number;
+    source_template_id?: number;
     name: string;
     category_type: DivisionCategoryType;
     gender_category: DivisionGenderCategory;
@@ -69,6 +71,7 @@ export function newDivision(): DraftDivision {
 export function draftDivisionFromTemplate(template: DivisionTemplate): DraftDivision {
     return {
         key: crypto.randomUUID(),
+        source_template_id: template.id,
         name: template.name,
         category_type: template.category_type,
         gender_category: template.gender_category,
@@ -281,51 +284,60 @@ export function DivisionEditor({
         onChange(divisions.filter((d) => d.key !== key));
     }
 
-    function addFromTemplate(templateId: string) {
-        const template = templates.find((t) => t.id === Number(templateId));
-        if (!template) return;
-        onChange([...divisions, draftDivisionFromTemplate(template)]);
+    function toggleTemplate(template: DivisionTemplate, checked: boolean) {
+        if (checked) {
+            onChange([...divisions, draftDivisionFromTemplate(template)]);
+        } else {
+            onChange(divisions.filter((d) => d.source_template_id !== template.id));
+        }
     }
+
+    const selectedTemplateIds = new Set(divisions.map((d) => d.source_template_id).filter((id): id is number => id !== undefined));
 
     return (
         <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                    <h3 className="text-lg font-semibold">Categorías / divisiones</h3>
-                    <p className="text-sm text-muted-foreground">Cada categoría tiene su propio formato de juego y reglas.</p>
-                </div>
-                <div className="flex gap-2">
-                    {templates.length > 0 && (
-                        <Select value="" onValueChange={addFromTemplate}>
-                            <SelectTrigger className="w-56">
-                                <SelectValue placeholder="Agregar desde plantilla..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {templates.map((template) => (
-                                    <SelectItem key={template.id} value={String(template.id)}>
-                                        {template.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    )}
-                    <Button type="button" onClick={() => onChange([...divisions, newDivision()])}>
-                        <Plus className="size-4" />
-                        Agregar categoría
+            <div>
+                <h3 className="text-lg font-semibold">Categorías / divisiones</h3>
+                <p className="text-sm text-muted-foreground">
+                    Selecciona las plantillas de categoría que quieres incluir en este torneo.
+                </p>
+            </div>
+
+            {templates.length === 0 ? (
+                <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-10 text-center">
+                    <LayoutTemplate className="size-8 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">Aún no tienes plantillas de categoría.</p>
+                    <Button type="button" size="sm" asChild>
+                        <Link href={route('templates.divisions.create')}>Crear plantilla de categoría</Link>
                     </Button>
                 </div>
-            </div>
+            ) : (
+                <div className="grid gap-2 sm:grid-cols-2">
+                    {templates.map((template) => (
+                        <label
+                            key={template.id}
+                            className="flex cursor-pointer items-start gap-2 rounded-lg border p-3 text-sm hover:bg-accent"
+                        >
+                            <Checkbox
+                                checked={selectedTemplateIds.has(template.id)}
+                                onCheckedChange={(checked) => toggleTemplate(template, checked === true)}
+                            />
+                            <div>
+                                <p className="font-medium">{template.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                    {CATEGORY_LABELS[template.category_type]} · {FORMAT_LABELS[template.format]}
+                                </p>
+                            </div>
+                        </label>
+                    ))}
+                </div>
+            )}
 
             <div className="space-y-4">
                 {divisions.map((division) => (
-                    <DivisionFieldsCard
-                        key={division.key}
-                        division={division}
-                        onChange={(patch) => update(division.key, patch)}
-                        onRemove={divisions.length > 1 ? () => remove(division.key) : undefined}
-                    />
+                    <DivisionFieldsCard key={division.key} division={division} onChange={(patch) => update(division.key, patch)} onRemove={() => remove(division.key)} />
                 ))}
-                {divisions.length === 0 && <p className="text-sm text-muted-foreground">Agrega al menos una categoría.</p>}
+                {divisions.length === 0 && <p className="text-sm text-muted-foreground">Selecciona al menos una plantilla arriba.</p>}
             </div>
         </div>
     );

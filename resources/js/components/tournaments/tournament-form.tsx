@@ -11,7 +11,7 @@ import { Check } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 import InputError from '@/components/input-error';
-import { DivisionEditor, newDivision, type DraftDivision } from '@/components/tournaments/division-editor';
+import { DivisionEditor, type DraftDivision } from '@/components/tournaments/division-editor';
 import { RegistrationFormBuilder, type DraftRegistrationField } from '@/components/tournaments/registration-form-builder';
 
 const STATUS_LABELS: Record<TournamentStatus, string> = {
@@ -95,7 +95,7 @@ export function TournamentForm({
         registration_opens_at: tournament?.registration_opens_at?.substring(0, 10) ?? '',
         registration_closes_at: tournament?.registration_closes_at?.substring(0, 10) ?? '',
         max_participants: tournament?.max_participants?.toString() ?? '',
-        divisions: tournament?.divisions?.length ? tournament.divisions.map(draftDivisionFromModel) : [newDivision()],
+        divisions: tournament?.divisions?.map(draftDivisionFromModel) ?? [],
         registration_fields: tournament?.registration_fields?.map(draftFieldFromModel) ?? [],
     });
 
@@ -281,6 +281,7 @@ export function TournamentForm({
                     fields={data.registration_fields}
                     onChange={(fields) => setData('registration_fields', fields)}
                     templates={formTemplates}
+                    allowManualAdd={false}
                 />
             )}
 

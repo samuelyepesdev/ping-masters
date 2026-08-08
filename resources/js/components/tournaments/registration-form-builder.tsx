@@ -10,7 +10,8 @@ import { type FormTemplate, type RegistrationFieldType } from '@/types';
 import { DndContext, type DragEndEvent, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Plus, Trash2 } from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { GripVertical, LayoutTemplate, Plus, Trash2 } from 'lucide-react';
 
 export interface DraftRegistrationField {
     key: string;
@@ -67,10 +68,12 @@ export function RegistrationFormBuilder({
     fields,
     onChange,
     templates = [],
+    allowManualAdd = true,
 }: {
     fields: DraftRegistrationField[];
     onChange: (fields: DraftRegistrationField[]) => void;
     templates?: FormTemplate[];
+    allowManualAdd?: boolean;
 }) {
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
@@ -122,14 +125,26 @@ export function RegistrationFormBuilder({
                             </SelectContent>
                         </Select>
                     )}
-                    <Button type="button" onClick={() => onChange([...fields, newField()])}>
-                        <Plus className="size-4" />
-                        Agregar campo
-                    </Button>
+                    {allowManualAdd && (
+                        <Button type="button" onClick={() => onChange([...fields, newField()])}>
+                            <Plus className="size-4" />
+                            Agregar campo
+                        </Button>
+                    )}
                 </div>
             </div>
 
-            {fields.length === 0 && (
+            {!allowManualAdd && templates.length === 0 && (
+                <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-10 text-center">
+                    <LayoutTemplate className="size-8 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">Aún no tienes plantillas de formulario.</p>
+                    <Button type="button" size="sm" asChild>
+                        <Link href={route('templates.forms.create')}>Crear plantilla de formulario</Link>
+                    </Button>
+                </div>
+            )}
+
+            {fields.length === 0 && !(!allowManualAdd && templates.length === 0) && (
                 <Card className="border-dashed">
                     <CardContent className="py-10 text-center text-sm text-muted-foreground">
                         Aún no hay campos personalizados. Los jugadores solo elegirán su(s) categoría(s) al inscribirse.
