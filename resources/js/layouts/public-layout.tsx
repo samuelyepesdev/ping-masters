@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { Trophy } from 'lucide-react';
 import { PropsWithChildren } from 'react';
 
 export default function PublicLayout({ children }: PropsWithChildren) {
@@ -12,7 +11,7 @@ export default function PublicLayout({ children }: PropsWithChildren) {
             <header className="border-b">
                 <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
                     <Link href={route('home')} className="flex items-center gap-2 font-semibold">
-                        <Trophy className="size-5 text-primary" />
+                        <img src="/logo.png" alt="Ping Masters" className="size-8 rounded-full object-contain" />
                         Ping Masters
                     </Link>
                     <nav className="flex items-center gap-2">

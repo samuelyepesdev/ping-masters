@@ -62,7 +62,14 @@ class TournamentController extends Controller
     {
         abort_unless($tournament->isRegistrationOpen(), 404);
 
-        $player = auth()->user()?->player;
+        $user = auth()->user();
+
+        if ($user && ! $user->hasVerifiedEmail()) {
+            return redirect()->route('verification.notice')
+                ->with('error', 'Debes verificar tu correo electrónico antes de inscribirte a otro torneo.');
+        }
+
+        $player = $user?->player;
 
         if ($player && $tournament->registrations()->where('player_id', $player->id)->exists()) {
             return redirect()->route('public.tournaments.show', $tournament)
@@ -81,6 +88,14 @@ class TournamentController extends Controller
         abort_unless($tournament->isRegistrationOpen(), 404);
 
         $user = $request->user();
+
+        // A brand-new account created moments ago by the guest branch below is grandfathered
+        // in for the registration that created it — blocking that would be a chicken-and-egg
+        // problem. Only an already-existing, still-unverified account is blocked here.
+        if ($user && ! $user->hasVerifiedEmail()) {
+            return redirect()->route('verification.notice')
+                ->with('error', 'Debes verificar tu correo electrónico antes de inscribirte a otro torneo.');
+        }
 
         $rules = [
             'divisions' => 'required|array|min:1',

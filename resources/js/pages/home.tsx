@@ -23,17 +23,17 @@ export default function Home({ tournaments, topPlayers, stats }: Props) {
         <PublicLayout>
             <Head title="Ping Masters" />
 
-            <section className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-card to-card px-6 py-16 text-center sm:px-12">
+            <section
+                className="relative overflow-hidden rounded-2xl border bg-cover bg-top px-6 pt-56 pb-10 text-center sm:px-12 sm:pt-64"
+                style={{ backgroundImage: "url('/banner.png')" }}
+            >
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/85 to-transparent" />
                 <motion.div
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, ease: 'easeOut' }}
-                    className="mx-auto max-w-2xl space-y-6"
+                    className="relative mx-auto max-w-2xl space-y-6"
                 >
-                    <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
-                        <Trophy className="size-8" />
-                    </div>
-                    <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Ping Masters</h1>
                     <p className="text-lg text-muted-foreground">
                         La plataforma para organizar torneos de tenis de mesa: inscripciones, sorteo automático, marcador en vivo, ranking ELO y
                         logros — todo en un solo lugar.
