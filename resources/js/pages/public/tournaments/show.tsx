@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import SmartLayout from '@/layouts/smart-layout';
+import { formatDateRange } from '@/lib/format-date';
 import { type BreadcrumbItem, type SharedData, type Tournament, type TournamentRegistration } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { CalendarDays, MapPin } from 'lucide-react';
@@ -44,7 +45,7 @@ export default function PublicTournamentShow({
                     <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1.5">
                             <CalendarDays className="size-4" />
-                            {tournament.start_date} — {tournament.end_date}
+                            {formatDateRange(tournament.start_date, tournament.end_date)}
                         </span>
                         {tournament.venue && (
                             <span className="flex items-center gap-1.5">

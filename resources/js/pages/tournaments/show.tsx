@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
+import { formatDateRange } from '@/lib/format-date';
 import { type BreadcrumbItem, type PaginatedData, type RegistrationStatus, type Tournament, type TournamentRegistration } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { FileDown, Pencil } from 'lucide-react';
@@ -53,7 +54,7 @@ export default function TournamentShow({
                         </div>
                         <p className="text-muted-foreground">
                             {tournament.venue ? `${tournament.venue}, ` : ''}
-                            {tournament.city} · {tournament.start_date} — {tournament.end_date}
+                            {tournament.city} · {formatDateRange(tournament.start_date, tournament.end_date)}
                         </p>
                     </div>
                     <div className="flex gap-2">

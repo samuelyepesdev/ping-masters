@@ -6,7 +6,7 @@ import SmartLayout from '@/layouts/smart-layout';
 import { cn } from '@/lib/utils';
 import { type Achievement, type BreadcrumbItem, type Player, type TournamentRegistration } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { Sparkles, Trophy } from 'lucide-react';
+import { BadgeCheck, Sparkles, Trophy } from 'lucide-react';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 interface Props {
@@ -56,6 +56,12 @@ export default function PlayerShow({ player, ratingHistory, registrations, level
                                 <Badge className="border-transparent bg-amber-500/15 text-amber-700 dark:text-amber-400">
                                     <Sparkles className="mr-1 size-3.5" />
                                     Élite
+                                </Badge>
+                            )}
+                            {player.user?.email_verified_at && (
+                                <Badge className="border-transparent bg-blue-500/15 text-blue-700 dark:text-blue-400">
+                                    <BadgeCheck className="mr-1 size-3.5" />
+                                    Verificado
                                 </Badge>
                             )}
                         </div>

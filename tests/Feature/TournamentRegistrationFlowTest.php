@@ -90,6 +90,41 @@ class TournamentRegistrationFlowTest extends TestCase
         $this->actingAs($outsider)->get(route('tournaments.show', $tournament))->assertForbidden();
     }
 
+    public function test_organizer_can_delete_their_own_tournament_but_not_someone_elses(): void
+    {
+        $organizer = User::factory()->create();
+        $organizer->assignRole('organizer');
+
+        $this->actingAs($organizer)->post(route('tournaments.store'), [
+            'name' => 'Copa a Eliminar',
+            'status' => 'draft',
+            'start_date' => now()->addDays(10)->toDateString(),
+            'end_date' => now()->addDays(11)->toDateString(),
+            'divisions' => [
+                [
+                    'name' => 'Individual Masculino',
+                    'category_type' => 'singles',
+                    'gender_category' => 'male',
+                    'format' => 'single_elimination',
+                    'best_of' => 5,
+                    'points_to_win' => 11,
+                    'seed_by_rating' => true,
+                ],
+            ],
+        ]);
+
+        $tournament = Tournament::firstOrFail();
+
+        $outsider = User::factory()->create();
+        $outsider->assignRole('organizer');
+        $this->actingAs($outsider)->delete(route('tournaments.destroy', $tournament))->assertForbidden();
+        $this->assertDatabaseHas('tournaments', ['id' => $tournament->id]);
+
+        $this->actingAs($organizer)->delete(route('tournaments.destroy', $tournament))
+            ->assertRedirect(route('tournaments.index'));
+        $this->assertDatabaseMissing('tournaments', ['id' => $tournament->id]);
+    }
+
     public function test_player_can_register_for_a_tournament_and_organizer_can_review_it(): void
     {
         $organizer = User::factory()->create();

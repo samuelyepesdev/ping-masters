@@ -1,14 +1,28 @@
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { TournamentStatusBadge } from '@/components/tournaments/status-badge';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
+import { formatDate, formatDateRange } from '@/lib/format-date';
 import { type BreadcrumbItem, type PaginatedData, type Tournament } from '@/types';
-import { Head, Link } from '@inertiajs/react';
-import { Plus, Trophy, Users } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import { CalendarDays, Eye, MapPin, Plus, Trash2, Trophy, Users } from 'lucide-react';
+import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Torneos', href: '/tournaments' }];
 
 export default function TournamentsIndex({ tournaments }: { tournaments: PaginatedData<Tournament> }) {
+    const [viewing, setViewing] = useState<Tournament | null>(null);
+    const [pendingDelete, setPendingDelete] = useState<Tournament | null>(null);
+
+    function destroy() {
+        if (!pendingDelete) return;
+        router.delete(route('tournaments.destroy', pendingDelete.id));
+        setPendingDelete(null);
+    }
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Torneos" />
@@ -60,7 +74,7 @@ export default function TournamentsIndex({ tournaments }: { tournaments: Paginat
                                             {tournament.city && <p className="text-xs text-muted-foreground">{tournament.city}</p>}
                                         </TableCell>
                                         <TableCell className="text-sm text-muted-foreground">
-                                            {tournament.start_date} — {tournament.end_date}
+                                            {formatDateRange(tournament.start_date, tournament.end_date)}
                                         </TableCell>
                                         <TableCell>
                                             <TournamentStatusBadge status={tournament.status} />
@@ -72,9 +86,21 @@ export default function TournamentsIndex({ tournaments }: { tournaments: Paginat
                                                 {tournament.registrations_count}
                                             </span>
                                         </TableCell>
-                                        <TableCell className="text-right">
+                                        <TableCell className="text-right whitespace-nowrap">
+                                            <Button variant="ghost" size="sm" onClick={() => setViewing(tournament)}>
+                                                <Eye className="size-4" />
+                                                Ver
+                                            </Button>
                                             <Button variant="ghost" size="sm" asChild>
                                                 <Link href={route('tournaments.edit', tournament.id)}>Editar</Link>
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-muted-foreground hover:text-destructive"
+                                                onClick={() => setPendingDelete(tournament)}
+                                            >
+                                                <Trash2 className="size-4" />
                                             </Button>
                                         </TableCell>
                                     </TableRow>
@@ -84,6 +110,65 @@ export default function TournamentsIndex({ tournaments }: { tournaments: Paginat
                     </div>
                 )}
             </div>
+
+            <Dialog open={viewing !== null} onOpenChange={(open) => !open && setViewing(null)}>
+                <DialogContent>
+                    {viewing && (
+                        <>
+                            <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2">
+                                    {viewing.name}
+                                    <TournamentStatusBadge status={viewing.status} />
+                                </DialogTitle>
+                            </DialogHeader>
+
+                            <div className="space-y-3 text-sm">
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                    <CalendarDays className="size-4" />
+                                    {formatDateRange(viewing.start_date, viewing.end_date)}
+                                </div>
+                                {(viewing.venue || viewing.city) && (
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        <MapPin className="size-4" />
+                                        {[viewing.venue, viewing.city].filter(Boolean).join(', ')}
+                                    </div>
+                                )}
+                                {(viewing.registration_opens_at || viewing.registration_closes_at) && (
+                                    <p className="text-muted-foreground">
+                                        Inscripciones: {formatDate(viewing.registration_opens_at) || '—'} a{' '}
+                                        {formatDate(viewing.registration_closes_at) || '—'}
+                                    </p>
+                                )}
+                                <div className="flex flex-wrap gap-2 pt-1">
+                                    <Badge variant="secondary">{viewing.divisions_count ?? 0} categorías</Badge>
+                                    <Badge variant="secondary">{viewing.registrations_count ?? 0} inscritos</Badge>
+                                    {viewing.max_participants && <Badge variant="secondary">Cupo: {viewing.max_participants}</Badge>}
+                                </div>
+                                {viewing.description && <p className="text-muted-foreground">{viewing.description}</p>}
+                            </div>
+
+                            <div className="flex justify-end gap-2 pt-2">
+                                <Button variant="outline" asChild>
+                                    <Link href={route('tournaments.edit', viewing.id)}>Editar</Link>
+                                </Button>
+                                <Button asChild>
+                                    <Link href={route('tournaments.show', viewing.id)}>Ver detalle completo</Link>
+                                </Button>
+                            </div>
+                        </>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            <ConfirmDialog
+                open={pendingDelete !== null}
+                onOpenChange={(open) => !open && setPendingDelete(null)}
+                title="Eliminar torneo"
+                description={`¿Eliminar «${pendingDelete?.name}»? Se eliminarán también sus categorías, inscripciones y partidos. Esta acción no se puede deshacer.`}
+                confirmLabel="Eliminar"
+                destructive
+                onConfirm={destroy}
+            />
         </AppLayout>
     );
 }

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useInitials } from '@/hooks/use-initials';
 import PublicLayout from '@/layouts/public-layout';
+import { formatDateRange } from '@/lib/format-date';
 import { type Player, type SharedData, type Tournament } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
@@ -93,7 +94,7 @@ export default function Home({ tournaments, topPlayers, stats }: Props) {
                                     <CardContent className="space-y-2 text-sm text-muted-foreground">
                                         <p className="flex items-center gap-2">
                                             <CalendarDays className="size-4" />
-                                            {tournament.start_date} — {tournament.end_date}
+                                            {formatDateRange(tournament.start_date, tournament.end_date)}
                                         </p>
                                         {tournament.city && (
                                             <p className="flex items-center gap-2">

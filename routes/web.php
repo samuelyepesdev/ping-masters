@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\CasualMatchController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DivisionController;
 use App\Http\Controllers\DivisionTemplateController;
 use App\Http\Controllers\DrawController;
@@ -17,7 +18,6 @@ use App\Http\Controllers\RefereeController;
 use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\TournamentRegistrationController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -30,9 +30,7 @@ Route::get('ranking', [PublicPlayerController::class, 'ranking'])->name('public.
 Route::get('jugadores/{player}', [PublicPlayerController::class, 'show'])->name('public.players.show');
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('tournaments', TournamentController::class);
     Route::patch('tournaments/{tournament}/registrations/{registration}', [TournamentRegistrationController::class, 'update'])

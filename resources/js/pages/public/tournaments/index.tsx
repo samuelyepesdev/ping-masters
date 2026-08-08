@@ -1,6 +1,7 @@
 import { TournamentStatusBadge } from '@/components/tournaments/status-badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import SmartLayout from '@/layouts/smart-layout';
+import { formatDateRange } from '@/lib/format-date';
 import { type BreadcrumbItem, type PaginatedData, type Tournament } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { CalendarDays, MapPin, Trophy, Users } from 'lucide-react';
@@ -35,7 +36,7 @@ export default function PublicTournamentsIndex({ tournaments }: { tournaments: P
                                 <CardContent className="space-y-2 text-sm text-muted-foreground">
                                     <p className="flex items-center gap-2">
                                         <CalendarDays className="size-4" />
-                                        {tournament.start_date} — {tournament.end_date}
+                                        {formatDateRange(tournament.start_date, tournament.end_date)}
                                     </p>
                                     {tournament.city && (
                                         <p className="flex items-center gap-2">
