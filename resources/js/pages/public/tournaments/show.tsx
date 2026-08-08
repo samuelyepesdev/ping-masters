@@ -87,7 +87,14 @@ export default function PublicTournamentShow({
                 {tournament.divisions?.map((division) => (
                     <Card key={division.id}>
                         <CardHeader>
-                            <CardTitle className="text-base">{division.name}</CardTitle>
+                            <div className="flex items-start justify-between gap-2">
+                                <CardTitle className="text-base">{division.name}</CardTitle>
+                                {division.is_full && (
+                                    <Badge variant="destructive" className="shrink-0">
+                                        Agotado
+                                    </Badge>
+                                )}
+                            </div>
                         </CardHeader>
                         <CardContent className="space-y-1 text-sm text-muted-foreground">
                             <p>{FORMAT_LABELS[division.format]}</p>
@@ -99,6 +106,7 @@ export default function PublicTournamentShow({
                                     Edad: {division.min_age ?? '–'} a {division.max_age ?? '–'}
                                 </p>
                             )}
+                            {division.max_participants && <p>Cupo: {division.max_participants}</p>}
                         </CardContent>
                     </Card>
                 ))}

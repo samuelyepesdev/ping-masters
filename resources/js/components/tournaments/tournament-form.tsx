@@ -1,7 +1,9 @@
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { type DivisionTemplate, type FormTemplate, type Tournament, type TournamentStatus } from '@/types';
@@ -29,11 +31,11 @@ interface TournamentFormData {
     venue: string;
     city: string;
     status: TournamentStatus;
+    is_active: boolean;
     start_date: string;
     end_date: string;
     registration_opens_at: string;
     registration_closes_at: string;
-    max_participants: string;
     divisions: DraftDivision[];
     registration_fields: DraftRegistrationField[];
     [key: string]: FormDataConvertible;
@@ -83,6 +85,7 @@ export function TournamentForm({
 }) {
     const isEdit = !!tournament;
     const [step, setStep] = useState(1);
+    const [datesTbd, setDatesTbd] = useState(isEdit && !tournament?.start_date);
 
     const { data, setData, post, put, transform, processing, errors } = useForm<TournamentFormData>({
         name: tournament?.name ?? '',
@@ -90,21 +93,29 @@ export function TournamentForm({
         venue: tournament?.venue ?? '',
         city: tournament?.city ?? '',
         status: tournament?.status ?? 'draft',
+        is_active: tournament?.is_active ?? true,
         start_date: tournament?.start_date?.substring(0, 10) ?? '',
         end_date: tournament?.end_date?.substring(0, 10) ?? '',
         registration_opens_at: tournament?.registration_opens_at?.substring(0, 10) ?? '',
         registration_closes_at: tournament?.registration_closes_at?.substring(0, 10) ?? '',
-        max_participants: tournament?.max_participants?.toString() ?? '',
         divisions: tournament?.divisions?.map(draftDivisionFromModel) ?? [],
         registration_fields: tournament?.registration_fields?.map(draftFieldFromModel) ?? [],
     });
+
+    function toggleDatesTbd(checked: boolean) {
+        setDatesTbd(checked);
+        if (checked) {
+            setData((current) => ({ ...current, start_date: '', end_date: '' }));
+        }
+    }
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
         const payload = {
             ...data,
-            max_participants: data.max_participants || null,
+            start_date: datesTbd ? null : data.start_date,
+            end_date: datesTbd ? null : data.end_date,
             registration_opens_at: data.registration_opens_at || null,
             registration_closes_at: data.registration_closes_at || null,
             divisions: data.divisions.map((d) => ({
@@ -203,15 +214,30 @@ export function TournamentForm({
                         </div>
                     </div>
 
+                    <label className="flex items-center gap-2 text-sm">
+                        <Checkbox checked={datesTbd} onCheckedChange={(checked) => toggleDatesTbd(checked === true)} />
+                        Fechas por definir (aún esperando confirmar cuántas personas se inscriben)
+                    </label>
+
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div className="grid gap-1.5">
                             <Label>Fecha de inicio</Label>
-                            <Input type="date" value={data.start_date} onChange={(e) => setData('start_date', e.target.value)} />
+                            <Input
+                                type="date"
+                                value={data.start_date}
+                                onChange={(e) => setData('start_date', e.target.value)}
+                                disabled={datesTbd}
+                            />
                             <InputError message={errors.start_date} />
                         </div>
                         <div className="grid gap-1.5">
                             <Label>Fecha de fin</Label>
-                            <Input type="date" value={data.end_date} onChange={(e) => setData('end_date', e.target.value)} />
+                            <Input
+                                type="date"
+                                value={data.end_date}
+                                onChange={(e) => setData('end_date', e.target.value)}
+                                disabled={datesTbd}
+                            />
                             <InputError message={errors.end_date} />
                         </div>
                     </div>
@@ -237,16 +263,6 @@ export function TournamentForm({
 
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div className="grid gap-1.5">
-                            <Label>Cupo máximo de participantes</Label>
-                            <Input
-                                type="number"
-                                min={1}
-                                value={data.max_participants}
-                                onChange={(e) => setData('max_participants', e.target.value)}
-                                placeholder="Sin límite"
-                            />
-                        </div>
-                        <div className="grid gap-1.5">
                             <Label>Estado</Label>
                             <Select value={data.status} onValueChange={(value) => setData('status', value as TournamentStatus)}>
                                 <SelectTrigger>
@@ -260,6 +276,15 @@ export function TournamentForm({
                                     ))}
                                 </SelectContent>
                             </Select>
+                        </div>
+                        <div className="grid gap-1.5">
+                            <Label>Visible al público</Label>
+                            <label className="flex h-10 items-center gap-2">
+                                <Switch checked={data.is_active} onCheckedChange={(checked) => setData('is_active', checked)} />
+                                <span className="text-sm text-muted-foreground">
+                                    {data.is_active ? 'Activo — visible para inscribirse' : 'Inactivo — oculto del público'}
+                                </span>
+                            </label>
                         </div>
                     </div>
                 </div>

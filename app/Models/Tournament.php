@@ -21,21 +21,21 @@ class Tournament extends Model
         'club_id',
         'created_by',
         'status',
+        'is_active',
         'start_date',
         'end_date',
         'registration_opens_at',
         'registration_closes_at',
-        'max_participants',
     ];
 
     protected function casts(): array
     {
         return [
+            'is_active' => 'boolean',
             'start_date' => 'date',
             'end_date' => 'date',
             'registration_opens_at' => 'date',
             'registration_closes_at' => 'date',
-            'max_participants' => 'integer',
         ];
     }
 

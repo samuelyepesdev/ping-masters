@@ -1,5 +1,6 @@
 import InputError from '@/components/input-error';
 import { DynamicFieldRenderer } from '@/components/tournaments/dynamic-field-renderer';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -132,15 +133,19 @@ export default function PublicTournamentRegister({ tournament }: { tournament: T
                             const division = tournament.divisions?.find((d) => d.id === selection.division_id);
                             if (!division) return null;
 
+                            const isFull = division.is_full === true;
+
                             return (
-                                <Card key={division.id}>
+                                <Card key={division.id} className={isFull ? 'opacity-60' : undefined}>
                                     <CardContent className="space-y-3 p-4">
                                         <label className="flex items-center gap-3">
                                             <Checkbox
                                                 checked={selection.selected}
+                                                disabled={isFull}
                                                 onCheckedChange={(checked) => toggleDivision(division.id, checked === true)}
                                             />
-                                            <span className="font-medium">{division.name}</span>
+                                            <span className="flex-1 font-medium">{division.name}</span>
+                                            {isFull && <Badge variant="destructive">Inscripciones agotadas</Badge>}
                                         </label>
 
                                         {selection.selected && division.category_type === 'doubles' && (

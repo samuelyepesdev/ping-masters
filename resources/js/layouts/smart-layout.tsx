@@ -13,7 +13,11 @@ export default function SmartLayout({ children, breadcrumbs }: PropsWithChildren
     const { auth } = usePage<SharedData>().props;
 
     if (auth.user) {
-        return <AppLayout breadcrumbs={breadcrumbs}>{children}</AppLayout>;
+        return (
+            <AppLayout breadcrumbs={breadcrumbs}>
+                <div className="mx-auto max-w-6xl px-4 py-8">{children}</div>
+            </AppLayout>
+        );
     }
 
     return <PublicLayout>{children}</PublicLayout>;

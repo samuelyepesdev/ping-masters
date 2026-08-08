@@ -145,7 +145,7 @@ export default function TournamentsIndex({ tournaments }: { tournaments: Paginat
                                 <div className="flex flex-wrap gap-2 pt-1">
                                     <Badge variant="secondary">{viewing.divisions_count ?? 0} categorías</Badge>
                                     <Badge variant="secondary">{viewing.registrations_count ?? 0} inscritos</Badge>
-                                    {viewing.max_participants && <Badge variant="secondary">Cupo: {viewing.max_participants}</Badge>}
+                                    {!viewing.is_active && <Badge variant="outline">Inactivo</Badge>}
                                 </div>
                                 {viewing.description && <p className="text-muted-foreground">{viewing.description}</p>}
                             </div>

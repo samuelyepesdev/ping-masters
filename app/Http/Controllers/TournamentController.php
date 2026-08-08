@@ -73,11 +73,11 @@ class TournamentController extends Controller
             'club_id' => $request->user()->club_id,
             'created_by' => $request->user()->id,
             'status' => $validated['status'],
-            'start_date' => $validated['start_date'],
-            'end_date' => $validated['end_date'],
+            'is_active' => $validated['is_active'] ?? true,
+            'start_date' => $validated['start_date'] ?? null,
+            'end_date' => $validated['end_date'] ?? null,
             'registration_opens_at' => $validated['registration_opens_at'] ?? null,
             'registration_closes_at' => $validated['registration_closes_at'] ?? null,
-            'max_participants' => $validated['max_participants'] ?? null,
         ]);
 
         foreach ($validated['divisions'] as $index => $division) {
@@ -100,7 +100,7 @@ class TournamentController extends Controller
         $tournament->loadCount('registrations');
 
         $registrations = $tournament->registrations()
-            ->with(['player.user', 'divisions.division'])
+            ->with(['player.user', 'divisions.division', 'responses.field'])
             ->orderByDesc('submitted_at')
             ->paginate(20);
 
@@ -134,11 +134,11 @@ class TournamentController extends Controller
             'venue' => $validated['venue'] ?? null,
             'city' => $validated['city'] ?? null,
             'status' => $validated['status'],
-            'start_date' => $validated['start_date'],
-            'end_date' => $validated['end_date'],
+            'is_active' => $validated['is_active'] ?? true,
+            'start_date' => $validated['start_date'] ?? null,
+            'end_date' => $validated['end_date'] ?? null,
             'registration_opens_at' => $validated['registration_opens_at'] ?? null,
             'registration_closes_at' => $validated['registration_closes_at'] ?? null,
-            'max_participants' => $validated['max_participants'] ?? null,
         ]);
 
         $this->syncDivisions($tournament, $validated['divisions']);
@@ -166,11 +166,11 @@ class TournamentController extends Controller
             'venue' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:255',
             'status' => 'required|in:draft,registration_open,registration_closed,in_progress,completed,cancelled',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
+            'is_active' => 'boolean',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
             'registration_opens_at' => 'nullable|date',
             'registration_closes_at' => 'nullable|date|after_or_equal:registration_opens_at',
-            'max_participants' => 'nullable|integer|min:1',
 
             'divisions' => 'required|array|min:1',
             'divisions.*.id' => 'nullable|integer',

@@ -155,4 +155,12 @@
     body {
         @apply bg-background text-foreground;
     }
+
+    /* The native date/time picker icon is dark by default and disappears against a dark
+       background — invert it so it stays visible in dark mode. */
+    .dark input[type='date']::-webkit-calendar-picker-indicator,
+    .dark input[type='time']::-webkit-calendar-picker-indicator,
+    .dark input[type='datetime-local']::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+    }
 }

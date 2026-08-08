@@ -35,7 +35,6 @@ class TournamentRegistrationFlowTest extends TestCase
             'end_date' => now()->addDays(11)->toDateString(),
             'registration_opens_at' => now()->subDay()->toDateString(),
             'registration_closes_at' => now()->addDays(9)->toDateString(),
-            'max_participants' => 32,
             'divisions' => [
                 [
                     'name' => 'Individual Masculino',
@@ -202,6 +201,12 @@ class TournamentRegistrationFlowTest extends TestCase
         $registration->refresh();
         $this->assertSame('approved', $registration->status);
         $this->assertSame($organizer->id, $registration->reviewed_by);
+
+        $this->actingAs($organizer)->get(route('tournaments.show', $tournament))
+            ->assertInertia(fn ($page) => $page
+                ->where('registrations.data.0.responses.0.value', 'M')
+                ->where('registrations.data.0.responses.0.field.label', 'Talla de camiseta')
+            );
     }
 
     public function test_player_cannot_register_twice_for_the_same_tournament(): void

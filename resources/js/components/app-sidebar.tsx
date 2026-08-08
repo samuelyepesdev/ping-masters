@@ -60,6 +60,11 @@ export function AppSidebar() {
         ...(isPlayer
             ? [
                   {
+                      title: 'Torneos disponibles',
+                      url: '/torneos',
+                      icon: Trophy,
+                  },
+                  {
                       title: 'Retos',
                       url: '/retos',
                       icon: Gamepad2,
@@ -93,7 +98,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href="/dashboard" prefetch>
+                            <Link href={route('home')} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

@@ -103,6 +103,8 @@ export default function GameShow({ match: initialMatch }: { match: MatchScoreSta
                         undo: route('games.undo', match.code),
                         forfeit: route('games.forfeit', match.code),
                     }}
+                    backUrl={route('games.index')}
+                    backLabel="Volver a mis retos"
                 />
             </div>
         </AppLayout>

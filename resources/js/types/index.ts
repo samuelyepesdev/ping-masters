@@ -107,6 +107,7 @@ export interface TournamentDivision {
     advance_per_group: number | null;
     swiss_rounds: number | null;
     max_participants: number | null;
+    is_full?: boolean;
     seed_by_rating: boolean;
     status: DivisionStatus;
     display_order: number;
@@ -221,11 +222,11 @@ export interface Tournament {
     club_id: number | null;
     created_by: number;
     status: TournamentStatus;
-    start_date: string;
-    end_date: string;
+    is_active: boolean;
+    start_date: string | null;
+    end_date: string | null;
     registration_opens_at: string | null;
     registration_closes_at: string | null;
-    max_participants: number | null;
     divisions?: TournamentDivision[];
     registration_fields?: TournamentRegistrationField[];
     divisions_count?: number;

@@ -59,7 +59,6 @@ class DemoTournamentSeeder extends Seeder
                 'end_date' => now()->addDays(2),
                 'registration_opens_at' => now()->subWeek(),
                 'registration_closes_at' => now()->addDay(),
-                'max_participants' => 100,
             ],
         );
 

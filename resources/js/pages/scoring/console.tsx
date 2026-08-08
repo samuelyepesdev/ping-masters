@@ -33,6 +33,8 @@ export default function ScoringConsole({
                         undo: route('tournaments.divisions.matches.undo', routeArgs),
                         forfeit: route('tournaments.divisions.matches.walkover', routeArgs),
                     }}
+                    backUrl={route('tournaments.divisions.show', [tournament.id, division.id])}
+                    backLabel="Volver a las llaves"
                 />
             </div>
         </AppLayout>

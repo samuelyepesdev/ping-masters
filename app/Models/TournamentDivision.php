@@ -77,4 +77,20 @@ class TournamentDivision extends Model
             $query->where('status', 'approved');
         });
     }
+
+    /**
+     * Registrations that occupy a seat: pending ones count too, so a division doesn't
+     * overbook while an organizer hasn't reviewed the queue yet.
+     */
+    public function activeRegistrationCount(): int
+    {
+        return $this->registrationDivisions()
+            ->whereHas('registration', fn ($query) => $query->whereIn('status', ['pending', 'approved']))
+            ->count();
+    }
+
+    public function isFull(): bool
+    {
+        return $this->max_participants !== null && $this->activeRegistrationCount() >= $this->max_participants;
+    }
 }

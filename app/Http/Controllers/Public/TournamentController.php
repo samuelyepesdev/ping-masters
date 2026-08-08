@@ -25,7 +25,8 @@ class TournamentController extends Controller
 {
     public function index(): Response
     {
-        $tournaments = Tournament::whereIn('status', ['registration_open', 'registration_closed', 'in_progress', 'completed'])
+        $tournaments = Tournament::where('is_active', true)
+            ->whereIn('status', ['registration_open', 'registration_closed', 'in_progress', 'completed'])
             ->withCount(['divisions', 'registrations'])
             ->orderByDesc('start_date')
             ->paginate(12);
@@ -37,10 +38,11 @@ class TournamentController extends Controller
 
     public function show(Tournament $tournament): Response
     {
-        abort_if($tournament->status === 'draft', 404);
+        abort_if($tournament->status === 'draft' || ! $tournament->is_active, 404);
 
         $tournament->load('divisions');
         $tournament->loadCount('registrations');
+        $tournament->divisions->each(fn ($division) => $division->setAttribute('is_full', $division->isFull()));
 
         $userRegistration = null;
 
@@ -77,6 +79,7 @@ class TournamentController extends Controller
         }
 
         $tournament->load('divisions', 'registrationFields');
+        $tournament->divisions->each(fn ($division) => $division->setAttribute('is_full', $division->isFull()));
 
         return Inertia::render('public/tournaments/register', [
             'tournament' => $tournament,
@@ -138,11 +141,16 @@ class TournamentController extends Controller
 
         $validated = $request->validate($rules);
 
-        if ($tournament->max_participants) {
-            $activeCount = $tournament->registrations()->whereIn('status', ['pending', 'approved'])->count();
-            if ($activeCount >= $tournament->max_participants) {
-                return back()->with('error', 'El torneo alcanzó el cupo máximo de participantes.');
-            }
+        $selectedDivisions = $tournament->divisions()
+            ->whereIn('id', collect($validated['divisions'])->pluck('division_id'))
+            ->get();
+
+        $fullDivisions = $selectedDivisions->filter(fn ($division) => $division->isFull());
+
+        if ($fullDivisions->isNotEmpty()) {
+            return back()
+                ->with('error', 'Inscripciones agotadas para: '.$fullDivisions->pluck('name')->implode(', ').'.')
+                ->withInput();
         }
 
         $setPasswordUrl = null;
@@ -182,10 +190,7 @@ class TournamentController extends Controller
             return back()->with('error', 'Ya estás inscrito en este torneo.');
         }
 
-        $divisionNames = $tournament->divisions()
-            ->whereIn('id', collect($validated['divisions'])->pluck('division_id'))
-            ->pluck('name')
-            ->all();
+        $divisionNames = $selectedDivisions->pluck('name')->all();
 
         DB::transaction(function () use ($tournament, $player, $validated) {
             $registration = $tournament->registrations()->create([
