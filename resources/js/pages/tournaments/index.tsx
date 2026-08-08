@@ -1,4 +1,5 @@
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { Pagination } from '@/components/pagination';
 import { TournamentStatusBadge } from '@/components/tournaments/status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -109,6 +110,8 @@ export default function TournamentsIndex({ tournaments }: { tournaments: Paginat
                         </Table>
                     </div>
                 )}
+
+                <Pagination data={tournaments} />
             </div>
 
             <Dialog open={viewing !== null} onOpenChange={(open) => !open && setViewing(null)}>

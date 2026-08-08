@@ -1,3 +1,4 @@
+import { Pagination } from '@/components/pagination';
 import { TournamentStatusBadge } from '@/components/tournaments/status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -178,6 +179,8 @@ export default function TournamentShow({
                         </Table>
                     </CardContent>
                 </Card>
+
+                <Pagination data={registrations} />
             </div>
 
             <Dialog open={!!viewing} onOpenChange={(open) => !open && setViewing(null)}>

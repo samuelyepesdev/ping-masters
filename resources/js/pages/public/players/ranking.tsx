@@ -1,3 +1,4 @@
+import { Pagination } from '@/components/pagination';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -77,6 +78,10 @@ export default function PlayerRanking({ players, filters }: { players: Paginated
                         )}
                     </TableBody>
                 </Table>
+            </div>
+
+            <div className="mt-4">
+                <Pagination data={players} />
             </div>
         </SmartLayout>
     );

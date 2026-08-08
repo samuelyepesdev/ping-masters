@@ -1,3 +1,4 @@
+import { Pagination } from '@/components/pagination';
 import { TournamentStatusBadge } from '@/components/tournaments/status-badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import SmartLayout from '@/layouts/smart-layout';
@@ -54,6 +55,10 @@ export default function PublicTournamentsIndex({ tournaments }: { tournaments: P
                     ))}
                 </div>
             )}
+
+            <div className="mt-8">
+                <Pagination data={tournaments} />
+            </div>
         </SmartLayout>
     );
 }

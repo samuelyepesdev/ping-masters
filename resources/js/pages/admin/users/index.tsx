@@ -1,3 +1,4 @@
+import { Pagination } from '@/components/pagination';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -120,6 +121,8 @@ export default function AdminUsersIndex({ users, filters, availableRoles }: Prop
                         </TableBody>
                     </Table>
                 </div>
+
+                <Pagination data={users} />
             </div>
 
             <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>

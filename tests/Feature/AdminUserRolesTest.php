@@ -31,6 +31,32 @@ class AdminUserRolesTest extends TestCase
         $this->actingAs($superAdmin)->get(route('admin.users.index'))->assertOk();
     }
 
+    public function test_user_list_paginates_by_twenty_and_includes_users_without_a_club(): void
+    {
+        $superAdmin = User::factory()->create();
+        $superAdmin->assignRole('super_admin');
+
+        // 25 more users (no club assigned) on top of the super admin itself = 26 total.
+        User::factory()->count(25)->create(['club_id' => null]);
+
+        $firstPage = $this->actingAs($superAdmin)->get(route('admin.users.index'));
+
+        $firstPage->assertInertia(fn ($page) => $page
+            ->component('admin/users/index')
+            ->where('users.total', 26)
+            ->where('users.per_page', 20)
+            ->where('users.last_page', 2)
+            ->has('users.data', 20)
+        );
+
+        $secondPage = $this->actingAs($superAdmin)->get(route('admin.users.index', ['page' => 2]));
+
+        $secondPage->assertInertia(fn ($page) => $page
+            ->component('admin/users/index')
+            ->has('users.data', 6)
+        );
+    }
+
     public function test_super_admin_can_assign_and_remove_roles_for_another_user(): void
     {
         $superAdmin = User::factory()->create();

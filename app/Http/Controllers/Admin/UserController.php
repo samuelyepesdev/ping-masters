@@ -24,7 +24,7 @@ class UserController extends Controller
             $query->where(fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%"));
         }
 
-        $users = $query->paginate(25)->withQueryString();
+        $users = $query->paginate(20)->withQueryString();
         $users->getCollection()->transform(fn (User $user) => [
             ...$user->toArray(),
             'roles' => $user->getRoleNames(),
