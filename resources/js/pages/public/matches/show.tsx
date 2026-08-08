@@ -2,11 +2,12 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useMatchChannel } from '@/hooks/use-match-channel';
 import PublicLayout from '@/layouts/public-layout';
+import { celebrateVictory } from '@/lib/confetti';
 import { cn } from '@/lib/utils';
 import { type MatchScoreState, type Tournament, type TournamentDivision } from '@/types';
 import { Head } from '@inertiajs/react';
 import { Circle, Timer } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function PublicMatchShow({
     tournament,
@@ -21,6 +22,14 @@ export default function PublicMatchShow({
 
     useEffect(() => setMatch(initialMatch), [initialMatch]);
     useMatchChannel(match.id, setMatch);
+
+    const previousStatus = useRef(match.status);
+    useEffect(() => {
+        if (previousStatus.current !== 'completed' && previousStatus.current !== 'walkover' && (match.status === 'completed' || match.status === 'walkover')) {
+            celebrateVictory();
+        }
+        previousStatus.current = match.status;
+    }, [match.status]);
 
     const currentGame = match.games.find((g) => g.game_number === match.current_game_number);
 

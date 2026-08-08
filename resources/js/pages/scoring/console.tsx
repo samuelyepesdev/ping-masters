@@ -3,11 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useMatchChannel } from '@/hooks/use-match-channel';
 import AppLayout from '@/layouts/app-layout';
+import { celebrateVictory } from '@/lib/confetti';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type MatchScoreState, type Tournament, type TournamentDivision } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { Circle, Flag, RotateCcw, Timer } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function ScoringConsole({
     tournament,
@@ -23,6 +24,14 @@ export default function ScoringConsole({
 
     useEffect(() => setMatch(initialMatch), [initialMatch]);
     useMatchChannel(match.id, setMatch);
+
+    const previousStatus = useRef(match.status);
+    useEffect(() => {
+        if (previousStatus.current !== 'completed' && previousStatus.current !== 'walkover' && (match.status === 'completed' || match.status === 'walkover')) {
+            celebrateVictory();
+        }
+        previousStatus.current = match.status;
+    }, [match.status]);
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Torneos', href: '/tournaments' },

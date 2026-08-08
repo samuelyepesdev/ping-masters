@@ -1,5 +1,6 @@
 import { MatchCard } from '@/components/tournaments/match-card';
 import { type BracketMatch, type RoundStage } from '@/types';
+import { motion } from 'framer-motion';
 
 const STAGE_LABELS: Record<RoundStage, string> = {
     main_bracket: 'Llave principal',
@@ -24,6 +25,7 @@ export function BracketTree({
     canScore: boolean;
 }) {
     const stages = STAGE_ORDER.filter((stage) => matches.some((m) => m.stage === stage));
+    let cardIndex = 0;
 
     return (
         <div className="space-y-8">
@@ -41,15 +43,29 @@ export function BracketTree({
                                 return (
                                     <div key={roundNumber} className="flex shrink-0 flex-col justify-around gap-6">
                                         <p className="text-center text-xs font-medium text-muted-foreground">{roundMatches[0]?.round_name}</p>
-                                        {roundMatches.map((match) => (
-                                            <MatchCard
-                                                key={match.id}
-                                                match={match}
-                                                canScore={canScore}
-                                                scoreRoute={route('tournaments.divisions.matches.score', [tournamentId, divisionId, match.id])}
-                                                scorecardRoute={route('tournaments.divisions.matches.pdf.scorecard', [tournamentId, divisionId, match.id])}
-                                            />
-                                        ))}
+                                        {roundMatches.map((match) => {
+                                            const delay = Math.min(cardIndex++, 24) * 0.035;
+
+                                            return (
+                                                <motion.div
+                                                    key={match.id}
+                                                    initial={{ opacity: 0, y: 12, scale: 0.96 }}
+                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                    transition={{ duration: 0.35, delay, ease: 'easeOut' }}
+                                                >
+                                                    <MatchCard
+                                                        match={match}
+                                                        canScore={canScore}
+                                                        scoreRoute={route('tournaments.divisions.matches.score', [tournamentId, divisionId, match.id])}
+                                                        scorecardRoute={route('tournaments.divisions.matches.pdf.scorecard', [
+                                                            tournamentId,
+                                                            divisionId,
+                                                            match.id,
+                                                        ])}
+                                                    />
+                                                </motion.div>
+                                            );
+                                        })}
                                     </div>
                                 );
                             })}
