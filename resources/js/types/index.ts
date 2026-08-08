@@ -233,7 +233,7 @@ export interface Tournament {
     [key: string]: unknown;
 }
 
-export type MatchStatus = 'pending' | 'ready' | 'in_progress' | 'completed' | 'walkover' | 'cancelled';
+export type MatchStatus = 'pending' | 'waiting' | 'ready' | 'in_progress' | 'completed' | 'walkover' | 'cancelled';
 export type RoundStage = 'group_stage' | 'swiss' | 'winners_bracket' | 'losers_bracket' | 'main_bracket' | 'grand_final';
 
 export interface BracketRound {
@@ -299,6 +299,8 @@ export interface MatchGameState {
 
 export interface MatchScoreState {
     id: number;
+    code?: string;
+    match_type?: 'ranked' | 'friendly';
     status: MatchStatus;
     entrant1_id: number | null;
     entrant2_id: number | null;

@@ -3,8 +3,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useInitials } from '@/hooks/use-initials';
-import PublicLayout from '@/layouts/public-layout';
-import { type PaginatedData, type Player } from '@/types';
+import SmartLayout from '@/layouts/smart-layout';
+import { type BreadcrumbItem, type PaginatedData, type Player } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { Sparkles } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
@@ -19,9 +19,10 @@ export default function PlayerRanking({ players, filters }: { players: Paginated
     };
 
     const startRank = (players.current_page - 1) * players.per_page;
+    const breadcrumbs: BreadcrumbItem[] = [{ title: 'Ranking', href: '/ranking' }];
 
     return (
-        <PublicLayout>
+        <SmartLayout breadcrumbs={breadcrumbs}>
             <Head title="Ranking" />
             <div className="mb-6 space-y-2">
                 <h1 className="text-3xl font-bold tracking-tight">Ranking de jugadores</h1>
@@ -77,6 +78,6 @@ export default function PlayerRanking({ players, filters }: { players: Paginated
                     </TableBody>
                 </Table>
             </div>
-        </PublicLayout>
+        </SmartLayout>
     );
 }

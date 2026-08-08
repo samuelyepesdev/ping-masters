@@ -1,3 +1,4 @@
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -12,6 +13,7 @@ import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } 
 import { CSS } from '@dnd-kit/utilities';
 import { Link } from '@inertiajs/react';
 import { GripVertical, LayoutTemplate, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 
 export interface DraftRegistrationField {
     key: string;
@@ -76,6 +78,7 @@ export function RegistrationFormBuilder({
     allowManualAdd?: boolean;
 }) {
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
+    const [pendingTemplate, setPendingTemplate] = useState<FormTemplate | null>(null);
 
     function handleDragEnd(event: DragEndEvent) {
         const { active, over } = event;
@@ -97,8 +100,19 @@ export function RegistrationFormBuilder({
     function loadTemplate(templateId: string) {
         const template = templates.find((t) => t.id === Number(templateId));
         if (!template) return;
-        if (fields.length > 0 && !confirm('Esto reemplazará los campos actuales del formulario. ¿Continuar?')) return;
+
+        if (fields.length > 0) {
+            setPendingTemplate(template);
+            return;
+        }
+
         onChange((template.fields ?? []).map(draftFieldFromTemplateField));
+    }
+
+    function confirmLoadTemplate() {
+        if (!pendingTemplate) return;
+        onChange((pendingTemplate.fields ?? []).map(draftFieldFromTemplateField));
+        setPendingTemplate(null);
     }
 
     return (
@@ -166,6 +180,17 @@ export function RegistrationFormBuilder({
                     </div>
                 </SortableContext>
             </DndContext>
+
+            <ConfirmDialog
+                open={pendingTemplate !== null}
+                onOpenChange={(open) => !open && setPendingTemplate(null)}
+                title="Reemplazar campos del formulario"
+                description="Esto reemplazará los campos actuales del formulario por los de la plantilla seleccionada. ¿Continuar?"
+                confirmLabel="Sí, reemplazar"
+                cancelLabel="No, mantener los actuales"
+                destructive
+                onConfirm={confirmLoadTemplate}
+            />
         </div>
     );
 }

@@ -1,3 +1,4 @@
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { CATEGORY_LABELS, FORMAT_LABELS } from '@/components/tournaments/division-editor';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -6,13 +7,17 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type DivisionTemplate } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { LayoutTemplate, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Plantillas de categorías', href: '/plantillas/categorias' }];
 
 export default function DivisionTemplatesIndex({ templates }: { templates: DivisionTemplate[] }) {
-    function destroy(template: DivisionTemplate) {
-        if (!confirm(`¿Eliminar la plantilla «${template.name}»?`)) return;
-        router.delete(route('templates.divisions.destroy', template.id));
+    const [pendingDelete, setPendingDelete] = useState<DivisionTemplate | null>(null);
+
+    function destroy() {
+        if (!pendingDelete) return;
+        router.delete(route('templates.divisions.destroy', pendingDelete.id));
+        setPendingDelete(null);
     }
 
     return (
@@ -60,7 +65,7 @@ export default function DivisionTemplatesIndex({ templates }: { templates: Divis
                                             <Button variant="ghost" size="sm" asChild>
                                                 <Link href={route('templates.divisions.edit', template.id)}>Editar</Link>
                                             </Button>
-                                            <Button variant="ghost" size="sm" onClick={() => destroy(template)}>
+                                            <Button variant="ghost" size="sm" onClick={() => setPendingDelete(template)}>
                                                 <Trash2 className="size-4 text-muted-foreground hover:text-destructive" />
                                             </Button>
                                         </TableCell>
@@ -70,6 +75,16 @@ export default function DivisionTemplatesIndex({ templates }: { templates: Divis
                         </Table>
                     </div>
                 )}
+
+                <ConfirmDialog
+                    open={pendingDelete !== null}
+                    onOpenChange={(open) => !open && setPendingDelete(null)}
+                    title="Eliminar plantilla"
+                    description={`¿Eliminar la plantilla «${pendingDelete?.name}»? Esta acción no se puede deshacer.`}
+                    confirmLabel="Eliminar"
+                    destructive
+                    onConfirm={destroy}
+                />
             </div>
         </AppLayout>
     );

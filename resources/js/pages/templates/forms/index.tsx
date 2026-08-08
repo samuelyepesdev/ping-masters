@@ -1,16 +1,21 @@
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type FormTemplate } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { LayoutTemplate, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Plantillas de formularios', href: '/plantillas/formularios' }];
 
 export default function FormTemplatesIndex({ templates }: { templates: FormTemplate[] }) {
-    function destroy(template: FormTemplate) {
-        if (!confirm(`¿Eliminar la plantilla «${template.name}»?`)) return;
-        router.delete(route('templates.forms.destroy', template.id));
+    const [pendingDelete, setPendingDelete] = useState<FormTemplate | null>(null);
+
+    function destroy() {
+        if (!pendingDelete) return;
+        router.delete(route('templates.forms.destroy', pendingDelete.id));
+        setPendingDelete(null);
     }
 
     return (
@@ -56,7 +61,7 @@ export default function FormTemplatesIndex({ templates }: { templates: FormTempl
                                             <Button variant="ghost" size="sm" asChild>
                                                 <Link href={route('templates.forms.edit', template.id)}>Editar</Link>
                                             </Button>
-                                            <Button variant="ghost" size="sm" onClick={() => destroy(template)}>
+                                            <Button variant="ghost" size="sm" onClick={() => setPendingDelete(template)}>
                                                 <Trash2 className="size-4 text-muted-foreground hover:text-destructive" />
                                             </Button>
                                         </TableCell>
@@ -66,6 +71,16 @@ export default function FormTemplatesIndex({ templates }: { templates: FormTempl
                         </Table>
                     </div>
                 )}
+
+                <ConfirmDialog
+                    open={pendingDelete !== null}
+                    onOpenChange={(open) => !open && setPendingDelete(null)}
+                    title="Eliminar plantilla"
+                    description={`¿Eliminar la plantilla «${pendingDelete?.name}»? Esta acción no se puede deshacer.`}
+                    confirmLabel="Eliminar"
+                    destructive
+                    onConfirm={destroy}
+                />
             </div>
         </AppLayout>
     );

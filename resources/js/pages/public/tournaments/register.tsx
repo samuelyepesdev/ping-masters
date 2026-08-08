@@ -5,10 +5,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import PublicLayout from '@/layouts/public-layout';
-import { type Tournament } from '@/types';
+import SmartLayout from '@/layouts/smart-layout';
+import { type BreadcrumbItem, type SharedData, type Tournament } from '@/types';
 import { type FormDataConvertible } from '@inertiajs/core';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
 interface DivisionSelection {
@@ -20,13 +20,22 @@ interface DivisionSelection {
 }
 
 interface RegisterFormData {
+    name: string;
+    email: string;
+    phone: string;
     divisionSelections: DivisionSelection[];
     responses: Record<string, string | boolean | string[]>;
     [key: string]: FormDataConvertible;
 }
 
 export default function PublicTournamentRegister({ tournament }: { tournament: Tournament }) {
+    const { auth } = usePage<SharedData>().props;
+    const isGuest = !auth.user;
+
     const { data, setData, post, transform, processing, errors } = useForm<RegisterFormData>({
+        name: '',
+        email: '',
+        phone: '',
         divisionSelections: (tournament.divisions ?? []).map((d) => ({
             division_id: d.id,
             selected: false,
@@ -58,6 +67,7 @@ export default function PublicTournamentRegister({ tournament }: { tournament: T
         e.preventDefault();
 
         transform(() => ({
+            ...(isGuest ? { name: data.name, email: data.email, phone: data.phone || null } : {}),
             divisions: data.divisionSelections
                 .filter((d) => d.selected)
                 .map((d) => ({
@@ -71,8 +81,14 @@ export default function PublicTournamentRegister({ tournament }: { tournament: T
         post(route('public.tournaments.store', tournament.slug));
     };
 
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Explorar torneos', href: '/torneos' },
+        { title: tournament.name, href: route('public.tournaments.show', tournament.slug) },
+        { title: 'Inscripción', href: '#' },
+    ];
+
     return (
-        <PublicLayout>
+        <SmartLayout breadcrumbs={breadcrumbs}>
             <Head title={`Inscripción — ${tournament.name}`} />
 
             <div className="mx-auto max-w-2xl space-y-8">
@@ -82,6 +98,34 @@ export default function PublicTournamentRegister({ tournament }: { tournament: T
                 </div>
 
                 <form onSubmit={submit} className="space-y-8">
+                    {isGuest && (
+                        <div className="space-y-3">
+                            <h2 className="text-lg font-semibold">Tus datos</h2>
+                            <p className="text-sm text-muted-foreground">
+                                No tienes una cuenta todavía — la crearemos con estos datos y te enviaremos por correo un enlace para definir tu
+                                contraseña.
+                            </p>
+                            <Card>
+                                <CardContent className="grid gap-3 p-4 sm:grid-cols-2">
+                                    <div className="grid gap-1.5">
+                                        <Label>Nombre completo</Label>
+                                        <Input value={data.name} onChange={(e) => setData('name', e.target.value)} />
+                                        <InputError message={errors.name} />
+                                    </div>
+                                    <div className="grid gap-1.5">
+                                        <Label>Correo electrónico</Label>
+                                        <Input type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} />
+                                        <InputError message={errors.email} />
+                                    </div>
+                                    <div className="grid gap-1.5 sm:col-span-2">
+                                        <Label>Teléfono (opcional)</Label>
+                                        <Input value={data.phone} onChange={(e) => setData('phone', e.target.value)} />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    )}
+
                     <div className="space-y-3">
                         <h2 className="text-lg font-semibold">Categorías</h2>
                         {data.divisionSelections.map((selection) => {
@@ -144,6 +188,6 @@ export default function PublicTournamentRegister({ tournament }: { tournament: T
                     </Button>
                 </form>
             </div>
-        </PublicLayout>
+        </SmartLayout>
     );
 }

@@ -2,9 +2,9 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useInitials } from '@/hooks/use-initials';
-import PublicLayout from '@/layouts/public-layout';
+import SmartLayout from '@/layouts/smart-layout';
 import { cn } from '@/lib/utils';
-import { type Achievement, type Player, type TournamentRegistration } from '@/types';
+import { type Achievement, type BreadcrumbItem, type Player, type TournamentRegistration } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { Sparkles, Trophy } from 'lucide-react';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -35,8 +35,13 @@ export default function PlayerShow({ player, ratingHistory, registrations, level
 
     const unlockedCodes = new Set((player.achievements ?? []).map((a) => a.code));
 
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Ranking', href: '/ranking' },
+        { title: player.user?.name ?? 'Jugador', href: '#' },
+    ];
+
     return (
-        <PublicLayout>
+        <SmartLayout breadcrumbs={breadcrumbs}>
             <Head title={player.user?.name ?? 'Jugador'} />
 
             <div className="space-y-8">
@@ -147,7 +152,7 @@ export default function PlayerShow({ player, ratingHistory, registrations, level
                     </CardContent>
                 </Card>
             </div>
-        </PublicLayout>
+        </SmartLayout>
     );
 }
 

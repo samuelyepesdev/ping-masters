@@ -1,10 +1,10 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useMatchChannel } from '@/hooks/use-match-channel';
-import PublicLayout from '@/layouts/public-layout';
+import SmartLayout from '@/layouts/smart-layout';
 import { celebrateVictory } from '@/lib/confetti';
 import { cn } from '@/lib/utils';
-import { type MatchScoreState, type Tournament, type TournamentDivision } from '@/types';
+import { type BreadcrumbItem, type MatchScoreState, type Tournament, type TournamentDivision } from '@/types';
 import { Head } from '@inertiajs/react';
 import { Circle, Timer } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -33,8 +33,14 @@ export default function PublicMatchShow({
 
     const currentGame = match.games.find((g) => g.game_number === match.current_game_number);
 
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Explorar torneos', href: '/torneos' },
+        { title: tournament.name, href: route('public.tournaments.show', tournament.slug) },
+        { title: `${match.entrant1_name} vs ${match.entrant2_name}`, href: '#' },
+    ];
+
     return (
-        <PublicLayout>
+        <SmartLayout breadcrumbs={breadcrumbs}>
             <Head title={`${match.entrant1_name} vs ${match.entrant2_name}`} />
             <div className="mx-auto max-w-2xl space-y-6">
                 <div className="text-center">
@@ -96,7 +102,7 @@ export default function PublicMatchShow({
                     </>
                 )}
             </div>
-        </PublicLayout>
+        </SmartLayout>
     );
 }
 

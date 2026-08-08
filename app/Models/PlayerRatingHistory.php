@@ -15,6 +15,7 @@ class PlayerRatingHistory extends Model
     protected $fillable = [
         'player_id',
         'match_id',
+        'casual_match_id',
         'opponent_player_id',
         'rating_before',
         'rating_after',
@@ -41,5 +42,10 @@ class PlayerRatingHistory extends Model
     public function match(): BelongsTo
     {
         return $this->belongsTo(TournamentMatch::class, 'match_id');
+    }
+
+    public function casualMatch(): BelongsTo
+    {
+        return $this->belongsTo(CasualMatch::class);
     }
 }

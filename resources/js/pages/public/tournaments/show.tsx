@@ -2,8 +2,8 @@ import { TournamentStatusBadge } from '@/components/tournaments/status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import PublicLayout from '@/layouts/public-layout';
-import { type SharedData, type Tournament, type TournamentRegistration } from '@/types';
+import SmartLayout from '@/layouts/smart-layout';
+import { type BreadcrumbItem, type SharedData, type Tournament, type TournamentRegistration } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { CalendarDays, MapPin } from 'lucide-react';
 
@@ -26,8 +26,13 @@ export default function PublicTournamentShow({
 }) {
     const { auth } = usePage<SharedData>().props;
 
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Explorar torneos', href: '/torneos' },
+        { title: tournament.name, href: '#' },
+    ];
+
     return (
-        <PublicLayout>
+        <SmartLayout breadcrumbs={breadcrumbs}>
             <Head title={tournament.name} />
 
             <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
@@ -97,6 +102,6 @@ export default function PublicTournamentShow({
                     </Card>
                 ))}
             </div>
-        </PublicLayout>
+        </SmartLayout>
     );
 }

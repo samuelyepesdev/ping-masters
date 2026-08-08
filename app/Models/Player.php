@@ -73,6 +73,16 @@ class Player extends Model
         return $this->hasMany(PlayerAchievement::class);
     }
 
+    public function createdCasualMatches(): HasMany
+    {
+        return $this->hasMany(CasualMatch::class, 'creator_player_id');
+    }
+
+    public function joinedCasualMatches(): HasMany
+    {
+        return $this->hasMany(CasualMatch::class, 'opponent_player_id');
+    }
+
     public function achievements(): BelongsToMany
     {
         return $this->belongsToMany(Achievement::class, 'player_achievements')->withPivot('unlocked_at');

@@ -2,6 +2,7 @@
 
 namespace App\Services\Ratings;
 
+use App\Models\CasualMatch;
 use App\Models\Player;
 use App\Models\PlayerRatingHistory;
 use App\Models\TournamentMatch;
@@ -39,7 +40,22 @@ class EloRatingService
      */
     public function applyMatchResult(TournamentMatch $match, Player $winner, Player $loser): void
     {
-        DB::transaction(function () use ($match, $winner, $loser) {
+        $this->applyRatingChange($winner, $loser, matchId: $match->id, casualMatchId: null);
+    }
+
+    /**
+     * Same ELO update as a tournament match, but for a "reto" marked as ranked (match_type
+     * 'ranked'). Friendly casual matches must never call this — they still award XP via
+     * XpService::awardForCasualMatch(), just without touching rating.
+     */
+    public function applyCasualMatchResult(CasualMatch $match, Player $winner, Player $loser): void
+    {
+        $this->applyRatingChange($winner, $loser, matchId: null, casualMatchId: $match->id);
+    }
+
+    private function applyRatingChange(Player $winner, Player $loser, ?int $matchId, ?int $casualMatchId): void
+    {
+        DB::transaction(function () use ($winner, $loser, $matchId, $casualMatchId) {
             $winnerK = $this->kFactor($winner);
             $loserK = $this->kFactor($loser);
 
@@ -70,7 +86,8 @@ class EloRatingService
 
             PlayerRatingHistory::create([
                 'player_id' => $winner->id,
-                'match_id' => $match->id,
+                'match_id' => $matchId,
+                'casual_match_id' => $casualMatchId,
                 'opponent_player_id' => $loser->id,
                 'rating_before' => $winnerRatingBefore,
                 'rating_after' => $winnerRatingAfter,
@@ -78,7 +95,8 @@ class EloRatingService
 
             PlayerRatingHistory::create([
                 'player_id' => $loser->id,
-                'match_id' => $match->id,
+                'match_id' => $matchId,
+                'casual_match_id' => $casualMatchId,
                 'opponent_player_id' => $winner->id,
                 'rating_before' => $loserRatingBefore,
                 'rating_after' => $loserRatingAfter,

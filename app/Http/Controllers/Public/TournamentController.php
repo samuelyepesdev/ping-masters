@@ -3,12 +3,20 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
+use App\Mail\TournamentRegistrationConfirmation;
 use App\Models\Player;
 use App\Models\Tournament;
 use App\Models\TournamentRegistrationField;
+use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -54,7 +62,7 @@ class TournamentController extends Controller
     {
         abort_unless($tournament->isRegistrationOpen(), 404);
 
-        $player = auth()->user()->player;
+        $player = auth()->user()?->player;
 
         if ($player && $tournament->registrations()->where('player_id', $player->id)->exists()) {
             return redirect()->route('public.tournaments.show', $tournament)
@@ -84,6 +92,12 @@ class TournamentController extends Controller
             'divisions.*.partner_club' => 'nullable|string|max:255',
             'responses' => 'array',
         ];
+
+        if (! $user) {
+            $rules['name'] = 'required|string|max:255';
+            $rules['email'] = 'required|string|lowercase|email|max:255';
+            $rules['phone'] = 'nullable|string|max:50';
+        }
 
         $tournament->load('registrationFields');
 
@@ -116,6 +130,33 @@ class TournamentController extends Controller
             }
         }
 
+        $setPasswordUrl = null;
+        $accountCreated = false;
+
+        if (! $user) {
+            $existing = User::where('email', $validated['email'])->first();
+
+            if ($existing) {
+                return back()
+                    ->withErrors(['email' => 'Ya existe una cuenta con este correo. Inicia sesión para continuar con la inscripción.'])
+                    ->withInput();
+            }
+
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'] ?? null,
+                'password' => Hash::make(Str::random(40)),
+            ]);
+
+            event(new Registered($user));
+            Auth::login($user);
+
+            $accountCreated = true;
+            $token = Password::broker()->createToken($user);
+            $setPasswordUrl = route('password.reset', ['token' => $token, 'email' => $user->email]);
+        }
+
         $player = Player::firstOrCreate(['user_id' => $user->id], ['club_id' => $user->club_id]);
 
         if (! $user->hasRole('player')) {
@@ -125,6 +166,11 @@ class TournamentController extends Controller
         if ($tournament->registrations()->where('player_id', $player->id)->exists()) {
             return back()->with('error', 'Ya estás inscrito en este torneo.');
         }
+
+        $divisionNames = $tournament->divisions()
+            ->whereIn('id', collect($validated['divisions'])->pluck('division_id'))
+            ->pluck('name')
+            ->all();
 
         DB::transaction(function () use ($tournament, $player, $validated) {
             $registration = $tournament->registrations()->create([
@@ -156,7 +202,15 @@ class TournamentController extends Controller
             }
         });
 
+        try {
+            Mail::to($user->email)->send(new TournamentRegistrationConfirmation($user, $tournament, $divisionNames, $setPasswordUrl));
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
         return redirect()->route('public.tournaments.show', $tournament)
-            ->with('success', '¡Inscripción enviada! Un organizador la revisará pronto.');
+            ->with('success', $accountCreated
+                ? '¡Inscripción enviada! Creamos tu cuenta y te enviamos un correo para que definas tu contraseña.'
+                : '¡Inscripción enviada! Un organizador la revisará pronto.');
     }
 }

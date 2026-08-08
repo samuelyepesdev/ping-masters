@@ -1,13 +1,15 @@
 import { TournamentStatusBadge } from '@/components/tournaments/status-badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import PublicLayout from '@/layouts/public-layout';
-import { type PaginatedData, type Tournament } from '@/types';
+import SmartLayout from '@/layouts/smart-layout';
+import { type BreadcrumbItem, type PaginatedData, type Tournament } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { CalendarDays, MapPin, Trophy, Users } from 'lucide-react';
 
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Explorar torneos', href: '/torneos' }];
+
 export default function PublicTournamentsIndex({ tournaments }: { tournaments: PaginatedData<Tournament> }) {
     return (
-        <PublicLayout>
+        <SmartLayout breadcrumbs={breadcrumbs}>
             <Head title="Torneos" />
             <div className="mb-8 space-y-2">
                 <h1 className="text-3xl font-bold tracking-tight">Torneos de tenis de mesa</h1>
@@ -51,6 +53,6 @@ export default function PublicTournamentsIndex({ tournaments }: { tournaments: P
                     ))}
                 </div>
             )}
-        </PublicLayout>
+        </SmartLayout>
     );
 }

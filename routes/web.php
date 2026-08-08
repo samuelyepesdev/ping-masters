@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\CasualMatchController;
 use App\Http\Controllers\DivisionController;
 use App\Http\Controllers\DivisionTemplateController;
 use App\Http\Controllers\DrawController;
@@ -10,9 +11,9 @@ use App\Http\Controllers\MatchResultController;
 use App\Http\Controllers\MatchScoringController;
 use App\Http\Controllers\PdfController;
 use App\Http\Controllers\Public\MatchController as PublicMatchController;
-use App\Http\Controllers\RefereeController;
 use App\Http\Controllers\Public\PlayerController as PublicPlayerController;
 use App\Http\Controllers\Public\TournamentController as PublicTournamentController;
+use App\Http\Controllers\RefereeController;
 use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\TournamentRegistrationController;
 use Illuminate\Support\Facades\Route;
@@ -22,6 +23,8 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('torneos', [PublicTournamentController::class, 'index'])->name('public.tournaments.index');
 Route::get('torneos/{tournament:slug}', [PublicTournamentController::class, 'show'])->name('public.tournaments.show');
+Route::get('torneos/{tournament:slug}/inscribirse', [PublicTournamentController::class, 'register'])->name('public.tournaments.register');
+Route::post('torneos/{tournament:slug}/inscribirse', [PublicTournamentController::class, 'store'])->name('public.tournaments.store');
 Route::get('partidos/{match}', [PublicMatchController::class, 'show'])->name('public.matches.show');
 Route::get('ranking', [PublicPlayerController::class, 'ranking'])->name('public.players.ranking');
 Route::get('jugadores/{player}', [PublicPlayerController::class, 'show'])->name('public.players.show');
@@ -30,9 +33,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
-
-    Route::get('torneos/{tournament:slug}/inscribirse', [PublicTournamentController::class, 'register'])->name('public.tournaments.register');
-    Route::post('torneos/{tournament:slug}/inscribirse', [PublicTournamentController::class, 'store'])->name('public.tournaments.store');
 
     Route::resource('tournaments', TournamentController::class);
     Route::patch('tournaments/{tournament}/registrations/{registration}', [TournamentRegistrationController::class, 'update'])
@@ -61,6 +61,16 @@ Route::middleware(['auth'])->group(function () {
         ->name('tournaments.divisions.matches.referee');
 
     Route::get('scoring', [RefereeController::class, 'index'])->name('referee.index');
+
+    Route::get('retos', [CasualMatchController::class, 'index'])->name('games.index');
+    Route::post('retos', [CasualMatchController::class, 'store'])->name('games.store');
+    Route::post('retos/unirse', [CasualMatchController::class, 'join'])->name('games.join');
+    Route::get('retos/{casualMatch:code}', [CasualMatchController::class, 'show'])->name('games.show');
+    Route::post('retos/{casualMatch:code}/start', [CasualMatchController::class, 'start'])->name('games.start');
+    Route::post('retos/{casualMatch:code}/point', [CasualMatchController::class, 'point'])->name('games.point');
+    Route::post('retos/{casualMatch:code}/undo', [CasualMatchController::class, 'undo'])->name('games.undo');
+    Route::post('retos/{casualMatch:code}/forfeit', [CasualMatchController::class, 'forfeit'])->name('games.forfeit');
+    Route::post('retos/{casualMatch:code}/cancel', [CasualMatchController::class, 'cancel'])->name('games.cancel');
 
     Route::get('tournaments/{tournament}/pdf/schedule', [PdfController::class, 'schedule'])
         ->name('tournaments.pdf.schedule');

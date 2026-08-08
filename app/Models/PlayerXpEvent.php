@@ -10,7 +10,10 @@ class PlayerXpEvent extends Model
 {
     use HasFactory;
 
-    public const TYPES = ['registration', 'match_played', 'match_won', 'division_champion', 'achievement'];
+    public const TYPES = [
+        'registration', 'match_played', 'match_won', 'division_champion', 'achievement',
+        'casual_match_played', 'casual_match_won',
+    ];
 
     protected $fillable = [
         'player_id',
@@ -18,6 +21,7 @@ class PlayerXpEvent extends Model
         'amount',
         'tournament_id',
         'tournament_match_id',
+        'casual_match_id',
         'note',
     ];
 
@@ -41,5 +45,10 @@ class PlayerXpEvent extends Model
     public function match(): BelongsTo
     {
         return $this->belongsTo(TournamentMatch::class, 'tournament_match_id');
+    }
+
+    public function casualMatch(): BelongsTo
+    {
+        return $this->belongsTo(CasualMatch::class);
     }
 }
