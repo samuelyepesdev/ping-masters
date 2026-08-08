@@ -26,4 +26,9 @@ class Club extends Model
     {
         return $this->hasMany(Player::class);
     }
+
+    public function tournaments(): HasMany
+    {
+        return $this->hasMany(Tournament::class);
+    }
 }
