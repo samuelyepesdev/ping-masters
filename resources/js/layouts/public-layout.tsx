@@ -11,7 +11,7 @@ export default function PublicLayout({ children }: PropsWithChildren) {
         <div className="min-h-screen bg-background">
             <header className="border-b">
                 <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-                    <Link href={route('public.tournaments.index')} className="flex items-center gap-2 font-semibold">
+                    <Link href={route('home')} className="flex items-center gap-2 font-semibold">
                         <Trophy className="size-5 text-primary" />
                         Ping Masters
                     </Link>

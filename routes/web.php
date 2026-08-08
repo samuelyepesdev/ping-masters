@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DivisionController;
 use App\Http\Controllers\DrawController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MatchResultController;
 use App\Http\Controllers\MatchScoringController;
 use App\Http\Controllers\PdfController;
@@ -13,9 +14,7 @@ use App\Http\Controllers\TournamentRegistrationController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('welcome');
-})->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('torneos', [PublicTournamentController::class, 'index'])->name('public.tournaments.index');
 Route::get('torneos/{tournament:slug}', [PublicTournamentController::class, 'show'])->name('public.tournaments.show');
