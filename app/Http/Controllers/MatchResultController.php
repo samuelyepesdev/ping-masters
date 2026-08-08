@@ -6,6 +6,7 @@ use App\Models\Tournament;
 use App\Models\TournamentDivision;
 use App\Models\TournamentMatch;
 use App\Services\Brackets\BracketAdvancementService;
+use App\Services\Progression\PlayerProgressionService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 
@@ -17,6 +18,7 @@ class MatchResultController extends Controller
         TournamentDivision $division,
         TournamentMatch $match,
         BracketAdvancementService $advancement,
+        PlayerProgressionService $progression,
     ): RedirectResponse {
         $this->authorize('update', $tournament);
         abort_if($division->tournament_id !== $tournament->id, 404);
@@ -31,6 +33,7 @@ class MatchResultController extends Controller
         ]);
 
         $advancement->recordResult($match, (int) $validated['winner_entrant_id']);
+        $progression->applyForMatch($match->fresh());
 
         return back()->with('success', 'Resultado registrado.');
     }

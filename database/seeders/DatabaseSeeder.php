@@ -14,6 +14,8 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(RoleSeeder::class);
+        $this->call(LevelSeeder::class);
+        $this->call(AchievementSeeder::class);
 
         $admin = User::factory()->create([
             'name' => 'Admin Ping Masters',

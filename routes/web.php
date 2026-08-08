@@ -4,7 +4,9 @@ use App\Http\Controllers\DivisionController;
 use App\Http\Controllers\DrawController;
 use App\Http\Controllers\MatchResultController;
 use App\Http\Controllers\MatchScoringController;
+use App\Http\Controllers\PdfController;
 use App\Http\Controllers\Public\MatchController as PublicMatchController;
+use App\Http\Controllers\Public\PlayerController as PublicPlayerController;
 use App\Http\Controllers\Public\TournamentController as PublicTournamentController;
 use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\TournamentRegistrationController;
@@ -18,6 +20,8 @@ Route::get('/', function () {
 Route::get('torneos', [PublicTournamentController::class, 'index'])->name('public.tournaments.index');
 Route::get('torneos/{tournament:slug}', [PublicTournamentController::class, 'show'])->name('public.tournaments.show');
 Route::get('partidos/{match}', [PublicMatchController::class, 'show'])->name('public.matches.show');
+Route::get('ranking', [PublicPlayerController::class, 'ranking'])->name('public.players.ranking');
+Route::get('jugadores/{player}', [PublicPlayerController::class, 'show'])->name('public.players.show');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', function () {
@@ -50,6 +54,15 @@ Route::middleware(['auth'])->group(function () {
         ->name('tournaments.divisions.matches.undo');
     Route::post('tournaments/{tournament}/divisions/{division}/matches/{match}/walkover', [MatchScoringController::class, 'walkover'])
         ->name('tournaments.divisions.matches.walkover');
+
+    Route::get('tournaments/{tournament}/pdf/schedule', [PdfController::class, 'schedule'])
+        ->name('tournaments.pdf.schedule');
+    Route::get('tournaments/{tournament}/divisions/{division}/pdf/bracket', [PdfController::class, 'bracket'])
+        ->name('tournaments.divisions.pdf.bracket');
+    Route::get('tournaments/{tournament}/divisions/{division}/matches/{match}/pdf/scorecard', [PdfController::class, 'scorecard'])
+        ->name('tournaments.divisions.matches.pdf.scorecard');
+    Route::get('tournaments/{tournament}/divisions/{division}/entrants/{entrant}/pdf/certificate', [PdfController::class, 'certificate'])
+        ->name('tournaments.divisions.entrants.pdf.certificate');
 });
 
 require __DIR__.'/settings.php';

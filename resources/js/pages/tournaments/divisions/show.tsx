@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type BracketMatch, type StandingRow, type Tournament, type TournamentDivision } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { Shuffle } from 'lucide-react';
+import { Award, FileDown, Shuffle } from 'lucide-react';
 
 const FORMAT_LABELS: Record<string, string> = {
     single_elimination: 'Eliminación directa',
@@ -50,6 +50,21 @@ export default function DivisionShow({ tournament, division, matches, groupsStan
     const canGenerateNextSwissRound =
         division.format === 'swiss' && division.status === 'drawn' && swissRoundComplete && swissRoundsGenerated < (division.swiss_rounds ?? 0);
 
+    const allMatchesDone = matches.length > 0 && matches.every((m) => m.status === 'completed' || m.status === 'walkover');
+    const championEntrantId = (() => {
+        if (!allMatchesDone) return null;
+
+        if (division.format === 'double_elimination') {
+            return matches.find((m) => m.stage === 'grand_final')?.winner_entrant_id ?? null;
+        }
+        if (division.format === 'single_elimination' || division.format === 'group_knockout') {
+            const finalMatches = matches.filter((m) => m.stage === 'main_bracket');
+            const lastRound = Math.max(...finalMatches.map((m) => m.round_number ?? 0));
+            return finalMatches.find((m) => m.round_number === lastRound)?.winner_entrant_id ?? null;
+        }
+        return divisionStandings?.[0]?.entrant_id ?? null;
+    })();
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={division.name} />
@@ -62,14 +77,38 @@ export default function DivisionShow({ tournament, division, matches, groupsStan
                         </p>
                     </div>
 
-                    {division.status === 'pending_draw' && (
-                        <Button onClick={generateDraw}>
-                            <Shuffle className="size-4" />
-                            Generar sorteo
-                        </Button>
-                    )}
+                    <div className="flex flex-wrap gap-2">
+                        {division.status === 'pending_draw' && (
+                            <Button onClick={generateDraw}>
+                                <Shuffle className="size-4" />
+                                Generar sorteo
+                            </Button>
+                        )}
 
-                    {canGenerateNextSwissRound && <Button onClick={generateNextSwissRound}>Generar ronda {swissRoundsGenerated + 1}</Button>}
+                        {division.status !== 'pending_draw' && (
+                            <Button variant="outline" asChild>
+                                <a href={route('tournaments.divisions.pdf.bracket', [tournament.id, division.id])} target="_blank" rel="noopener noreferrer">
+                                    <FileDown className="size-4" />
+                                    Llave (PDF)
+                                </a>
+                            </Button>
+                        )}
+
+                        {championEntrantId && (
+                            <Button variant="outline" asChild>
+                                <a
+                                    href={`${route('tournaments.divisions.entrants.pdf.certificate', [tournament.id, division.id, championEntrantId])}?placement=campeon`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    <Award className="size-4" />
+                                    Certificado del campeón
+                                </a>
+                            </Button>
+                        )}
+
+                        {canGenerateNextSwissRound && <Button onClick={generateNextSwissRound}>Generar ronda {swissRoundsGenerated + 1}</Button>}
+                    </div>
                 </div>
 
                 {division.status === 'pending_draw' && (
@@ -99,6 +138,11 @@ export default function DivisionShow({ tournament, division, matches, groupsStan
                                                 match={match}
                                                 canScore
                                                 scoreRoute={route('tournaments.divisions.matches.score', [tournament.id, division.id, match.id])}
+                                                scorecardRoute={route('tournaments.divisions.matches.pdf.scorecard', [
+                                                    tournament.id,
+                                                    division.id,
+                                                    match.id,
+                                                ])}
                                             />
                                         ))}
                                     </div>
@@ -137,6 +181,11 @@ export default function DivisionShow({ tournament, division, matches, groupsStan
                                                             match={match}
                                                             canScore
                                                             scoreRoute={route('tournaments.divisions.matches.score', [
+                                                                tournament.id,
+                                                                division.id,
+                                                                match.id,
+                                                            ])}
+                                                            scorecardRoute={route('tournaments.divisions.matches.pdf.scorecard', [
                                                                 tournament.id,
                                                                 division.id,
                                                                 match.id,

@@ -47,6 +47,7 @@ export function BracketTree({
                                                 match={match}
                                                 canScore={canScore}
                                                 scoreRoute={route('tournaments.divisions.matches.score', [tournamentId, divisionId, match.id])}
+                                                scorecardRoute={route('tournaments.divisions.matches.pdf.scorecard', [tournamentId, divisionId, match.id])}
                                             />
                                         ))}
                                     </div>

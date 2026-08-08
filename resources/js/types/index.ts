@@ -42,6 +42,26 @@ export interface User {
     [key: string]: unknown; // This allows for additional properties...
 }
 
+export interface Club {
+    id: number;
+    name: string;
+    city: string | null;
+    country: string | null;
+    logo_path: string | null;
+    [key: string]: unknown;
+}
+
+export interface Achievement {
+    id: number;
+    code: string;
+    name: string;
+    description: string | null;
+    icon: string | null;
+    xp_reward: number;
+    pivot?: { unlocked_at: string };
+    [key: string]: unknown;
+}
+
 export interface Player {
     id: number;
     user_id: number;
@@ -59,6 +79,8 @@ export interface Player {
     level: number;
     is_elite: boolean;
     user?: User;
+    club?: Club | null;
+    achievements?: Achievement[];
     [key: string]: unknown;
 }
 
@@ -139,6 +161,7 @@ export interface TournamentRegistration {
     reviewed_at: string | null;
     review_notes: string | null;
     player?: Player;
+    tournament?: Tournament;
     divisions?: TournamentRegistrationDivision[];
     responses?: TournamentRegistrationResponse[];
     [key: string]: unknown;

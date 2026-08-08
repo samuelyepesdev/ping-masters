@@ -6,6 +6,7 @@ use App\Events\MatchScoreUpdated;
 use App\Models\Tournament;
 use App\Models\TournamentDivision;
 use App\Models\TournamentMatch;
+use App\Services\Progression\PlayerProgressionService;
 use App\Services\Scoring\MatchScoringService;
 use App\Services\Scoring\MatchStatePresenter;
 use Illuminate\Http\RedirectResponse;
@@ -16,7 +17,10 @@ use RuntimeException;
 
 class MatchScoringController extends Controller
 {
-    public function __construct(private readonly MatchStatePresenter $presenter) {}
+    public function __construct(
+        private readonly MatchStatePresenter $presenter,
+        private readonly PlayerProgressionService $progression,
+    ) {}
 
     public function show(Tournament $tournament, TournamentDivision $division, TournamentMatch $match): Response
     {
@@ -75,7 +79,13 @@ class MatchScoringController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
-        $this->broadcastState($match->fresh());
+        $fresh = $match->fresh();
+
+        if ($fresh->status === 'completed') {
+            $this->progression->applyForMatch($fresh);
+        }
+
+        $this->broadcastState($fresh);
 
         return back();
     }
@@ -134,6 +144,12 @@ class MatchScoringController extends Controller
 
     private function broadcastState(TournamentMatch $match): void
     {
-        broadcast(new MatchScoreUpdated($match->id, $this->presenter->present($match)));
+        // Scoring must keep working even if the Reverb server is unreachable — live
+        // spectator updates are a nice-to-have, not a reason to fail the referee's action.
+        try {
+            broadcast(new MatchScoreUpdated($match->id, $this->presenter->present($match)));
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 }

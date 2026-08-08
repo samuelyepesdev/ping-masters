@@ -2,15 +2,17 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { type BracketMatch } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Radio, Trophy } from 'lucide-react';
+import { FileDown, Radio, Trophy } from 'lucide-react';
 
 export function MatchCard({
     match,
     scoreRoute,
+    scorecardRoute,
     canScore,
 }: {
     match: BracketMatch;
     scoreRoute: string;
+    scorecardRoute?: string;
     canScore: boolean;
 }) {
     const isDone = match.status === 'completed' || match.status === 'walkover';
@@ -29,6 +31,18 @@ export function MatchCard({
                         {match.status === 'in_progress' ? 'En vivo' : 'Iniciar partido'}
                     </Link>
                 </Button>
+            )}
+
+            {isDone && scorecardRoute && (
+                <a
+                    href={scorecardRoute}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 flex items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground hover:underline"
+                >
+                    <FileDown className="size-3" />
+                    Planilla (PDF)
+                </a>
             )}
         </div>
     );

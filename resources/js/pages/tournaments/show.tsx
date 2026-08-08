@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type PaginatedData, type RegistrationStatus, type Tournament, type TournamentRegistration } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { Pencil } from 'lucide-react';
+import { FileDown, Pencil } from 'lucide-react';
 import { useState } from 'react';
 
 const REGISTRATION_STATUS_LABELS: Record<RegistrationStatus, string> = {
@@ -56,12 +56,20 @@ export default function TournamentShow({
                             {tournament.city} · {tournament.start_date} — {tournament.end_date}
                         </p>
                     </div>
-                    <Button variant="outline" asChild>
-                        <Link href={route('tournaments.edit', tournament.id)}>
-                            <Pencil className="size-4" />
-                            Editar
-                        </Link>
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button variant="outline" asChild>
+                            <a href={route('tournaments.pdf.schedule', tournament.id)} target="_blank" rel="noopener noreferrer">
+                                <FileDown className="size-4" />
+                                Cronograma (PDF)
+                            </a>
+                        </Button>
+                        <Button variant="outline" asChild>
+                            <Link href={route('tournaments.edit', tournament.id)}>
+                                <Pencil className="size-4" />
+                                Editar
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">

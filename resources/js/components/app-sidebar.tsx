@@ -58,7 +58,7 @@ export function AppSidebar() {
             : []),
         {
             title: 'Ranking',
-            url: '/rankings',
+            url: '/ranking',
             icon: Trophy,
         },
         ...(isSuperAdmin
