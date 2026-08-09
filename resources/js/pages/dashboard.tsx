@@ -97,7 +97,7 @@ export default function Dashboard({ admin, organizer, referee, player }: Props) 
 
                 {organizer && (
                     <section className="space-y-4">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <h2 className="text-lg font-semibold">Tus torneos</h2>
                             <Button size="sm" asChild>
                                 <Link href={route('tournaments.create')}>
@@ -135,7 +135,7 @@ export default function Dashboard({ admin, organizer, referee, player }: Props) 
 
                 {referee && (
                     <section className="space-y-4">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <h2 className="text-lg font-semibold">Arbitraje</h2>
                             <Button variant="outline" size="sm" asChild>
                                 <Link href={route('referee.index')}>Ver todos mis partidos</Link>
@@ -171,9 +171,9 @@ export default function Dashboard({ admin, organizer, referee, player }: Props) 
 
                 {player && (
                     <section className="space-y-4">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <h2 className="text-lg font-semibold">Tu progreso</h2>
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap gap-2">
                                 <Button variant="outline" size="sm" asChild>
                                     <Link href={route('games.index')}>
                                         <Swords className="size-4" />

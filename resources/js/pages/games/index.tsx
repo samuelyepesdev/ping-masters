@@ -145,8 +145,8 @@ export default function GamesIndex({ matches }: { matches: CasualMatchSummary[] 
                     {matches.map((match) => (
                         <Link key={match.id} href={route('games.show', match.code)}>
                             <Card className="transition-colors hover:bg-accent">
-                                <CardContent className="flex items-center justify-between gap-3 p-4">
-                                    <div>
+                                <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+                                    <div className="min-w-0">
                                         <p className="font-medium">
                                             {match.creator_name} {match.opponent_name ? `vs ${match.opponent_name}` : ''}
                                         </p>
@@ -155,7 +155,10 @@ export default function GamesIndex({ matches }: { matches: CasualMatchSummary[] 
                                             {match.score_summary ? ` · ${match.score_summary}` : ''}
                                         </p>
                                     </div>
-                                    <Badge variant={match.status === 'completed' || match.status === 'cancelled' ? 'secondary' : 'default'}>
+                                    <Badge
+                                        className="shrink-0"
+                                        variant={match.status === 'completed' || match.status === 'cancelled' ? 'secondary' : 'default'}
+                                    >
                                         {STATUS_LABELS[match.status] ?? match.status}
                                     </Badge>
                                 </CardContent>

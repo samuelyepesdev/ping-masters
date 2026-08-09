@@ -16,6 +16,7 @@
         "laravel/reverb": "^1.11",
         "laravel/tinker": "^2.10.1",
         "laravel/wayfinder": "^0.1.21",
+        "league/flysystem-aws-s3-v3": "^3.35",
         "resend/resend-php": "^1.7",
         "spatie/laravel-permission": "^8.3",
         "tightenco/ziggy": "^2.4"

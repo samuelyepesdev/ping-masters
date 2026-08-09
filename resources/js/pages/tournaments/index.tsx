@@ -4,12 +4,13 @@ import { TournamentStatusBadge } from '@/components/tournaments/status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatDateRange } from '@/lib/format-date';
 import { type BreadcrumbItem, type PaginatedData, type Tournament } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { CalendarDays, Eye, MapPin, Plus, Trash2, Trophy, Users } from 'lucide-react';
+import { CalendarDays, Eye, MapPin, MoreHorizontal, Pencil, Plus, Trash2, Trophy, Users } from 'lucide-react';
 import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Torneos', href: '/tournaments' }];
@@ -28,7 +29,7 @@ export default function TournamentsIndex({ tournaments }: { tournaments: Paginat
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Torneos" />
             <div className="space-y-6 p-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight">Torneos</h1>
                         <p className="text-muted-foreground">Administra tus eventos de tenis de mesa.</p>
@@ -87,22 +88,33 @@ export default function TournamentsIndex({ tournaments }: { tournaments: Paginat
                                                 {tournament.registrations_count}
                                             </span>
                                         </TableCell>
-                                        <TableCell className="text-right whitespace-nowrap">
-                                            <Button variant="ghost" size="sm" onClick={() => setViewing(tournament)}>
-                                                <Eye className="size-4" />
-                                                Ver
-                                            </Button>
-                                            <Button variant="ghost" size="sm" asChild>
-                                                <Link href={route('tournaments.edit', tournament.id)}>Editar</Link>
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="text-muted-foreground hover:text-destructive"
-                                                onClick={() => setPendingDelete(tournament)}
-                                            >
-                                                <Trash2 className="size-4" />
-                                            </Button>
+                                        <TableCell className="text-right">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="size-8">
+                                                        <MoreHorizontal className="size-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={() => setViewing(tournament)}>
+                                                        <Eye className="size-4" />
+                                                        Ver
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem asChild>
+                                                        <Link href={route('tournaments.edit', tournament.id)}>
+                                                            <Pencil className="size-4" />
+                                                            Editar
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        className="text-destructive focus:text-destructive"
+                                                        onClick={() => setPendingDelete(tournament)}
+                                                    >
+                                                        <Trash2 className="size-4" />
+                                                        Eliminar
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </TableCell>
                                     </TableRow>
                                 ))}

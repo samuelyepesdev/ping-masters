@@ -1,5 +1,5 @@
 import { Pagination } from '@/components/pagination';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -72,6 +72,7 @@ export default function PlayerRanking({ players, filters }: { players: Paginated
                                     <TableCell>
                                         <Link href={route('public.players.show', player.id)} className="flex items-center gap-2 hover:underline">
                                             <Avatar className="size-8">
+                                                <AvatarImage src={player.user?.avatar ?? undefined} alt={player.user?.name ?? ''} />
                                                 <AvatarFallback className="text-xs">{getInitials(player.user?.name ?? '?')}</AvatarFallback>
                                             </Avatar>
                                             <span className="font-medium">{player.user?.name}</span>
@@ -140,6 +141,7 @@ function PodiumCard({ player, rank, getInitials }: { player: Player; rank: 1 | 2
         >
             {isFirst && <Crown className="size-5 text-amber-500" />}
             <Avatar className={isFirst ? 'size-20' : 'size-14'}>
+                <AvatarImage src={player.user?.avatar ?? undefined} alt={player.user?.name ?? ''} />
                 <AvatarFallback className={isFirst ? 'text-lg' : 'text-sm'}>{getInitials(player.user?.name ?? '?')}</AvatarFallback>
             </Avatar>
             <div>

@@ -1,16 +1,18 @@
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { CheckCircle2 } from 'lucide-react';
-import { FormEventHandler } from 'react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { CheckCircle2, Loader2, Trash2 } from 'lucide-react';
+import { ChangeEvent, FormEventHandler, useRef, useState } from 'react';
 
 import DeleteUser from '@/components/delete-user';
 import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useInitials } from '@/hooks/use-initials';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 
@@ -23,6 +25,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
     const { auth } = usePage<SharedData>().props;
+    const getInitials = useInitials();
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [avatarProcessing, setAvatarProcessing] = useState(false);
 
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
         name: auth.user.name,
@@ -35,6 +40,33 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
         patch(route('profile.update'));
     };
 
+    function handleAvatarSelected(e: ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setAvatarProcessing(true);
+        router.post(
+            route('profile.avatar.update'),
+            { avatar: file },
+            {
+                forceFormData: true,
+                preserveScroll: true,
+                onFinish: () => {
+                    setAvatarProcessing(false);
+                    if (fileInputRef.current) fileInputRef.current.value = '';
+                },
+            },
+        );
+    }
+
+    function removeAvatar() {
+        setAvatarProcessing(true);
+        router.delete(route('profile.avatar.destroy'), {
+            preserveScroll: true,
+            onFinish: () => setAvatarProcessing(false),
+        });
+    }
+
     const isVerified = auth.user.email_verified_at !== null;
 
     return (
@@ -44,6 +76,40 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
             <SettingsLayout>
                 <div className="space-y-6">
                     <HeadingSmall title="Información del perfil" description="Actualiza tu nombre y correo electrónico" />
+
+                    <div className="flex items-center gap-4">
+                        <Avatar className="size-16">
+                            <AvatarImage src={auth.user.avatar ?? undefined} alt={auth.user.name} />
+                            <AvatarFallback className="text-lg">{getInitials(auth.user.name)}</AvatarFallback>
+                        </Avatar>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleAvatarSelected}
+                                disabled={avatarProcessing}
+                            />
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={avatarProcessing}
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                {avatarProcessing && <Loader2 className="size-4 animate-spin" />}
+                                Cambiar foto
+                            </Button>
+                            {auth.user.avatar && (
+                                <Button type="button" variant="ghost" size="sm" disabled={avatarProcessing} onClick={removeAvatar}>
+                                    <Trash2 className="size-4" />
+                                    Quitar
+                                </Button>
+                            )}
+                        </div>
+                    </div>
 
                     <form onSubmit={submit} className="space-y-6">
                         <div className="grid gap-2">

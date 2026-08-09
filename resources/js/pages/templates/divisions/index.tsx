@@ -24,7 +24,7 @@ export default function DivisionTemplatesIndex({ templates }: { templates: Divis
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Plantillas de categorías" />
             <div className="space-y-6 p-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight">Plantillas de categorías</h1>
                         <p className="text-muted-foreground">Reutilízalas al crear cualquier torneo, sin volver a configurarlas desde cero.</p>

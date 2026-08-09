@@ -22,7 +22,7 @@ export default function FormTemplatesIndex({ templates }: { templates: FormTempl
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Plantillas de formularios" />
             <div className="space-y-6 p-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight">Plantillas de formularios</h1>
                         <p className="text-muted-foreground">Formularios de inscripción reutilizables para tus torneos.</p>

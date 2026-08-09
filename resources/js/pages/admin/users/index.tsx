@@ -1,17 +1,18 @@
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Pagination } from '@/components/pagination';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useInitials } from '@/hooks/use-initials';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type PaginatedData, type User } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { KeyRound, Pencil, Trash2 } from 'lucide-react';
+import { KeyRound, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 const ROLE_LABELS: Record<string, string> = {
@@ -100,7 +101,7 @@ export default function AdminUsersIndex({ users, filters, availableRoles }: Prop
                                 <TableRow key={user.id}>
                                     <TableCell>
                                         <div className="flex items-center gap-2">
-                                            <UserAvatar name={user.name} />
+                                            <UserAvatar name={user.name} avatar={user.avatar} />
                                             <div>
                                                 <p className="font-medium">{user.name}</p>
                                                 <p className="text-xs text-muted-foreground">{user.email}</p>
@@ -118,23 +119,31 @@ export default function AdminUsersIndex({ users, filters, availableRoles }: Prop
                                             ))}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-right whitespace-nowrap">
-                                        <Button variant="ghost" size="sm" onClick={() => openEdit(user)}>
-                                            <Pencil className="size-4" />
-                                            Editar roles
-                                        </Button>
-                                        <Button variant="ghost" size="sm" onClick={() => setPendingReset(user)}>
-                                            <KeyRound className="size-4" />
-                                            Restablecer contraseña
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="text-muted-foreground hover:text-destructive"
-                                            onClick={() => setPendingDelete(user)}
-                                        >
-                                            <Trash2 className="size-4" />
-                                        </Button>
+                                    <TableCell className="text-right">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="size-8">
+                                                    <MoreHorizontal className="size-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem onClick={() => openEdit(user)}>
+                                                    <Pencil className="size-4" />
+                                                    Editar roles
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => setPendingReset(user)}>
+                                                    <KeyRound className="size-4" />
+                                                    Restablecer contraseña
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    className="text-destructive focus:text-destructive"
+                                                    onClick={() => setPendingDelete(user)}
+                                                >
+                                                    <Trash2 className="size-4" />
+                                                    Eliminar
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -199,11 +208,12 @@ export default function AdminUsersIndex({ users, filters, availableRoles }: Prop
     );
 }
 
-function UserAvatar({ name }: { name: string }) {
+function UserAvatar({ name, avatar }: { name: string; avatar?: string | null }) {
     const getInitials = useInitials();
 
     return (
         <Avatar className="size-8">
+            <AvatarImage src={avatar ?? undefined} alt={name} />
             <AvatarFallback className="text-xs">{getInitials(name)}</AvatarFallback>
         </Avatar>
     );

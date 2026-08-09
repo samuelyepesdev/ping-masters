@@ -33,7 +33,7 @@ export interface User {
     id: number;
     name: string;
     email: string;
-    avatar?: string;
+    avatar?: string | null;
     email_verified_at: string | null;
     roles: string[];
     club_id: number | null;

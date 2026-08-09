@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useInitials } from '@/hooks/use-initials';
@@ -47,6 +47,7 @@ export default function PlayerShow({ player, ratingHistory, registrations, level
             <div className="space-y-8">
                 <div className="flex flex-wrap items-center gap-4">
                     <Avatar className="size-16">
+                        <AvatarImage src={player.user?.avatar ?? undefined} alt={player.user?.name ?? ''} />
                         <AvatarFallback className="text-xl">{getInitials(player.user?.name ?? '?')}</AvatarFallback>
                     </Avatar>
                     <div>
@@ -71,7 +72,7 @@ export default function PlayerShow({ player, ratingHistory, registrations, level
 
                 <Card>
                     <CardContent className="space-y-2 pt-6">
-                        <div className="flex items-center justify-between text-sm">
+                        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm">
                             <span className="font-medium">
                                 Nivel {player.level} · {levelName}
                             </span>

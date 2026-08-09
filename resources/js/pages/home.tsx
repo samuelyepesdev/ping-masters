@@ -1,5 +1,5 @@
 import { TournamentStatusBadge } from '@/components/tournaments/status-badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useInitials } from '@/hooks/use-initials';
@@ -154,6 +154,7 @@ export default function Home({ tournaments, topPlayers, stats }: Props) {
                                 >
                                     <span className="w-4 text-sm text-muted-foreground">{index + 1}</span>
                                     <Avatar className="size-8">
+                                        <AvatarImage src={player.user?.avatar ?? undefined} alt={player.user?.name ?? ''} />
                                         <AvatarFallback className="text-xs">{getInitials(player.user?.name ?? '?')}</AvatarFallback>
                                     </Avatar>
                                     <span className="flex-1 truncate text-sm font-medium">{player.user?.name}</span>

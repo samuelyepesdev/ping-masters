@@ -47,9 +47,9 @@ export default function TournamentShow({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={tournament.name} />
             <div className="space-y-6 p-4">
-                <div className="flex items-start justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-3">
                             <h1 className="text-2xl font-bold tracking-tight">{tournament.name}</h1>
                             <TournamentStatusBadge status={tournament.status} />
                         </div>
@@ -58,7 +58,7 @@ export default function TournamentShow({
                             {tournament.city} · {formatDateRange(tournament.start_date, tournament.end_date)}
                         </p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                         <Button variant="outline" asChild>
                             <a href={route('tournaments.pdf.schedule', tournament.id)} target="_blank" rel="noopener noreferrer">
                                 <FileDown className="size-4" />
