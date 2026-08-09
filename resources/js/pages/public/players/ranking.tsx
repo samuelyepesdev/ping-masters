@@ -113,7 +113,7 @@ function Podium({ players, getInitials }: { players: Player[]; getInitials: (nam
     const [first, second, third] = players;
 
     return (
-        <div className="mb-8 grid grid-cols-3 items-end gap-3 sm:gap-4">
+        <div className="mb-8 grid grid-cols-3 items-end gap-2 sm:gap-4">
             {second ? <PodiumCard player={second} rank={2} getInitials={getInitials} /> : <div />}
             <PodiumCard player={first} rank={1} getInitials={getInitials} />
             {third ? <PodiumCard player={third} rank={3} getInitials={getInitials} /> : <div />}
@@ -134,19 +134,21 @@ function PodiumCard({ player, rank, getInitials }: { player: Player; rank: 1 | 2
         <Link
             href={route('public.players.show', player.id)}
             className={cn(
-                'flex flex-col items-center gap-2 rounded-2xl border-2 px-3 pb-5 text-center transition-transform hover:-translate-y-0.5',
+                'flex min-w-0 flex-col items-center gap-1.5 rounded-2xl border-2 px-1.5 pb-3 text-center transition-transform hover:-translate-y-0.5 sm:gap-2 sm:px-3 sm:pb-5',
                 PODIUM_STYLES[rank],
-                isFirst ? 'pt-8' : 'pt-6',
+                isFirst ? 'pt-5 sm:pt-8' : 'pt-4 sm:pt-6',
             )}
         >
-            {isFirst && <Crown className="size-5 text-amber-500" />}
-            <Avatar className={isFirst ? 'size-20' : 'size-14'}>
+            {isFirst && <Crown className="size-4 text-amber-500 sm:size-5" />}
+            <Avatar className={isFirst ? 'size-12 sm:size-20' : 'size-9 sm:size-14'}>
                 <AvatarImage src={player.user?.avatar ?? undefined} alt={player.user?.name ?? ''} />
-                <AvatarFallback className={isFirst ? 'text-lg' : 'text-sm'}>{getInitials(player.user?.name ?? '?')}</AvatarFallback>
+                <AvatarFallback className={isFirst ? 'text-sm sm:text-lg' : 'text-xs sm:text-sm'}>
+                    {getInitials(player.user?.name ?? '?')}
+                </AvatarFallback>
             </Avatar>
-            <div>
-                <p className={cn('font-semibold', isFirst ? 'text-lg' : 'text-sm')}>{player.user?.name}</p>
-                <p className="text-xs text-muted-foreground">
+            <div className="min-w-0 w-full">
+                <p className={cn('truncate font-semibold', isFirst ? 'text-sm sm:text-lg' : 'text-xs sm:text-sm')}>{player.user?.name}</p>
+                <p className="truncate text-[11px] text-muted-foreground sm:text-xs">
                     #{rank} · {player.rating_current}
                 </p>
             </div>

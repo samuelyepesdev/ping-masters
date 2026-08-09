@@ -7,8 +7,8 @@ use App\Models\TournamentDivision;
 use App\Models\TournamentMatch;
 use App\Services\Brackets\BracketAdvancementService;
 use App\Services\Progression\PlayerProgressionService;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class MatchResultController extends Controller
 {

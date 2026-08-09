@@ -38,15 +38,15 @@ class CasualMatchController extends Controller
             ->limit(20)
             ->get()
             ->map(fn (CasualMatch $match) => [
-            'id' => $match->id,
-            'code' => $match->code,
-            'match_type' => $match->match_type,
-            'status' => $match->status,
-            'creator_name' => $match->creator->user->name,
-            'opponent_name' => $match->opponent?->user->name,
-            'score_summary' => $match->score_summary,
-            'is_mine_to_join' => $match->status === 'waiting' && $match->creator_player_id !== $player->id,
-        ]);
+                'id' => $match->id,
+                'code' => $match->code,
+                'match_type' => $match->match_type,
+                'status' => $match->status,
+                'creator_name' => $match->creator->user->name,
+                'opponent_name' => $match->opponent?->user->name,
+                'score_summary' => $match->score_summary,
+                'is_mine_to_join' => $match->status === 'waiting' && $match->creator_player_id !== $player->id,
+            ]);
 
         return Inertia::render('games/index', [
             'matches' => $matches,
