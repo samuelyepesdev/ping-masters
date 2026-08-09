@@ -46,6 +46,10 @@ class ProfileController extends Controller
      */
     public function updateAvatar(Request $request): RedirectResponse
     {
+        if (! $request->user()->hasVerifiedEmail()) {
+            return back()->with('error', 'Debes verificar tu correo electrónico antes de poder cambiar tu foto de perfil.');
+        }
+
         $request->validate([
             'avatar' => ['required', 'image', 'max:4096'],
         ]);

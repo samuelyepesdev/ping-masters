@@ -83,30 +83,35 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                             <AvatarFallback className="text-lg">{getInitials(auth.user.name)}</AvatarFallback>
                         </Avatar>
 
-                        <div className="flex flex-wrap items-center gap-2">
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={handleAvatarSelected}
-                                disabled={avatarProcessing}
-                            />
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                disabled={avatarProcessing}
-                                onClick={() => fileInputRef.current?.click()}
-                            >
-                                {avatarProcessing && <Loader2 className="size-4 animate-spin" />}
-                                Cambiar foto
-                            </Button>
-                            {auth.user.avatar && (
-                                <Button type="button" variant="ghost" size="sm" disabled={avatarProcessing} onClick={removeAvatar}>
-                                    <Trash2 className="size-4" />
-                                    Quitar
+                        <div className="space-y-1.5">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleAvatarSelected}
+                                    disabled={avatarProcessing || !isVerified}
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={avatarProcessing || !isVerified}
+                                    onClick={() => fileInputRef.current?.click()}
+                                >
+                                    {avatarProcessing && <Loader2 className="size-4 animate-spin" />}
+                                    Cambiar foto
                                 </Button>
+                                {auth.user.avatar && (
+                                    <Button type="button" variant="ghost" size="sm" disabled={avatarProcessing} onClick={removeAvatar}>
+                                        <Trash2 className="size-4" />
+                                        Quitar
+                                    </Button>
+                                )}
+                            </div>
+                            {!isVerified && (
+                                <p className="text-xs text-muted-foreground">Verifica tu correo electrónico para poder cambiar tu foto de perfil.</p>
                             )}
                         </div>
                     </div>
