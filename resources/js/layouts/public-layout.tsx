@@ -1,10 +1,11 @@
+import { FlashMessages } from '@/components/flash-messages';
 import { Button } from '@/components/ui/button';
 import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren } from 'react';
 
 export default function PublicLayout({ children }: PropsWithChildren) {
-    const { auth, flash } = usePage<SharedData>().props;
+    const { auth } = usePage<SharedData>().props;
 
     return (
         <div className="min-h-screen bg-background">
@@ -33,16 +34,7 @@ export default function PublicLayout({ children }: PropsWithChildren) {
                 </div>
             </header>
             <main className="mx-auto max-w-6xl px-4 py-8">
-                {flash?.success && (
-                    <div className="mb-6 rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-700 dark:text-green-400">
-                        {flash.success}
-                    </div>
-                )}
-                {flash?.error && (
-                    <div className="mb-6 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-400">
-                        {flash.error}
-                    </div>
-                )}
+                <FlashMessages className="mb-6" />
                 {children}
             </main>
         </div>

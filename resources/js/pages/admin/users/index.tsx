@@ -1,3 +1,4 @@
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Pagination } from '@/components/pagination';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +11,7 @@ import { useInitials } from '@/hooks/use-initials';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type PaginatedData, type User } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { Pencil } from 'lucide-react';
+import { KeyRound, Pencil, Trash2 } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 const ROLE_LABELS: Record<string, string> = {
@@ -32,6 +33,8 @@ export default function AdminUsersIndex({ users, filters, availableRoles }: Prop
     const [search, setSearch] = useState(filters.search ?? '');
     const [editing, setEditing] = useState<User | null>(null);
     const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+    const [pendingDelete, setPendingDelete] = useState<User | null>(null);
+    const [pendingReset, setPendingReset] = useState<User | null>(null);
 
     const submitSearch: FormEventHandler = (e) => {
         e.preventDefault();
@@ -55,6 +58,18 @@ export default function AdminUsersIndex({ users, filters, availableRoles }: Prop
             { roles: selectedRoles },
             { preserveScroll: true, onSuccess: () => setEditing(null) },
         );
+    }
+
+    function destroyUser() {
+        if (!pendingDelete) return;
+        router.delete(route('admin.users.destroy', pendingDelete.id), { preserveScroll: true });
+        setPendingDelete(null);
+    }
+
+    function resetPassword() {
+        if (!pendingReset) return;
+        router.post(route('admin.users.reset-password', pendingReset.id), {}, { preserveScroll: true });
+        setPendingReset(null);
     }
 
     return (
@@ -103,10 +118,22 @@ export default function AdminUsersIndex({ users, filters, availableRoles }: Prop
                                             ))}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-right">
+                                    <TableCell className="text-right whitespace-nowrap">
                                         <Button variant="ghost" size="sm" onClick={() => openEdit(user)}>
                                             <Pencil className="size-4" />
                                             Editar roles
+                                        </Button>
+                                        <Button variant="ghost" size="sm" onClick={() => setPendingReset(user)}>
+                                            <KeyRound className="size-4" />
+                                            Restablecer contraseña
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-muted-foreground hover:text-destructive"
+                                            onClick={() => setPendingDelete(user)}
+                                        >
+                                            <Trash2 className="size-4" />
                                         </Button>
                                     </TableCell>
                                 </TableRow>
@@ -149,6 +176,25 @@ export default function AdminUsersIndex({ users, filters, availableRoles }: Prop
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <ConfirmDialog
+                open={pendingDelete !== null}
+                onOpenChange={(open) => !open && setPendingDelete(null)}
+                title="Eliminar usuario"
+                description={`¿Eliminar a «${pendingDelete?.name}»? Su cuenta quedará desactivada y no podrá iniciar sesión, pero su historial de torneos y partidos se conserva.`}
+                confirmLabel="Eliminar"
+                destructive
+                onConfirm={destroyUser}
+            />
+
+            <ConfirmDialog
+                open={pendingReset !== null}
+                onOpenChange={(open) => !open && setPendingReset(null)}
+                title="Restablecer contraseña"
+                description={`Se le asignará a «${pendingReset?.name}» una contraseña temporal por defecto, que verás en un mensaje después de confirmar. Avísale para que la cambie al entrar.`}
+                confirmLabel="Restablecer"
+                onConfirm={resetPassword}
+            />
         </AppLayout>
     );
 }

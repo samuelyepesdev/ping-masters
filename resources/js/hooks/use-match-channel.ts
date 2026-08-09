@@ -7,14 +7,14 @@ export function useMatchChannel(matchId: number, onUpdate: (state: MatchScoreSta
         const channelName = `${channel}.${matchId}`;
 
         import('@/echo').then(({ default: echo }) => {
-            if (cancelled) return;
+            if (cancelled || !echo) return;
 
             echo.channel(channelName).listen('.score.updated', onUpdate);
         });
 
         return () => {
             cancelled = true;
-            import('@/echo').then(({ default: echo }) => echo.leaveChannel(channelName));
+            import('@/echo').then(({ default: echo }) => echo?.leaveChannel(channelName));
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [matchId, channel]);

@@ -4,20 +4,31 @@ import Pusher from 'pusher-js';
 declare global {
     interface Window {
         Pusher: typeof Pusher;
-        Echo: Echo<'reverb'>;
+        Echo?: Echo<'reverb'>;
     }
 }
 
-window.Pusher = Pusher;
+const reverbKey = import.meta.env.VITE_REVERB_APP_KEY;
 
-window.Echo = new Echo({
-    broadcaster: 'reverb',
-    key: import.meta.env.VITE_REVERB_APP_KEY,
-    wsHost: import.meta.env.VITE_REVERB_HOST,
-    wsPort: import.meta.env.VITE_REVERB_PORT ?? 80,
-    wssPort: import.meta.env.VITE_REVERB_PORT ?? 443,
-    forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
-    enabledTransports: ['ws', 'wss'],
-});
+// Reverb is optional — deployments that skip it (broadcasting disabled) must not crash
+// just because a page tried to subscribe to a live channel. Callers get `null` back and
+// simply don't receive live updates instead of throwing.
+let echo: Echo<'reverb'> | null = null;
 
-export default window.Echo;
+if (reverbKey) {
+    window.Pusher = Pusher;
+
+    echo = new Echo({
+        broadcaster: 'reverb',
+        key: reverbKey,
+        wsHost: import.meta.env.VITE_REVERB_HOST,
+        wsPort: import.meta.env.VITE_REVERB_PORT ?? 80,
+        wssPort: import.meta.env.VITE_REVERB_PORT ?? 443,
+        forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
+        enabledTransports: ['ws', 'wss'],
+    });
+
+    window.Echo = echo;
+}
+
+export default echo;

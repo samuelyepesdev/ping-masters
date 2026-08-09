@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -62,5 +63,33 @@ class UserController extends Controller
         $user->syncRoles($newRoles);
 
         return back()->with('success', 'Roles actualizados.');
+    }
+
+    public function destroy(Request $request, User $user)
+    {
+        abort_unless($request->user()->isSuperAdmin(), 403);
+
+        if ($request->user()->id === $user->id) {
+            return back()->with('error', 'No puedes eliminar tu propia cuenta.');
+        }
+
+        if ($user->hasRole('super_admin') && Role::findByName('super_admin')->users()->count() <= 1) {
+            return back()->with('error', 'Debe quedar al menos un super administrador en el sistema.');
+        }
+
+        $user->delete();
+
+        return back()->with('success', 'Usuario eliminado.');
+    }
+
+    public function resetPassword(Request $request, User $user)
+    {
+        abort_unless($request->user()->isSuperAdmin(), 403);
+
+        $default = config('admin.default_reset_password');
+
+        $user->update(['password' => Hash::make($default)]);
+
+        return back()->with('success', "Contraseña de {$user->name} restablecida a: {$default}. Compártela para que la cambie al entrar.");
     }
 }

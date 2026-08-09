@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class AdminUserRolesTest extends TestCase
@@ -101,5 +102,90 @@ class AdminUserRolesTest extends TestCase
 
         $this->assertFalse($superAdmin2->fresh()->hasRole('super_admin'));
         $this->assertTrue($superAdmin1->fresh()->hasRole('super_admin'));
+    }
+
+    public function test_super_admin_can_soft_delete_another_user(): void
+    {
+        $superAdmin = User::factory()->create();
+        $superAdmin->assignRole('super_admin');
+
+        $target = User::factory()->create();
+        $target->assignRole('player');
+
+        $this->actingAs($superAdmin)->delete(route('admin.users.destroy', $target))->assertRedirect();
+
+        $this->assertSoftDeleted('users', ['id' => $target->id]);
+        $this->assertNull(User::find($target->id));
+        $this->assertNotNull(User::withTrashed()->find($target->id));
+
+        // Soft-deleted users disappear from the admin list and can no longer authenticate.
+        $index = $this->actingAs($superAdmin)->get(route('admin.users.index'));
+        $index->assertInertia(fn ($page) => $page->where('users.total', 1));
+
+        $this->assertFalse(auth()->attempt(['email' => $target->email, 'password' => 'password']));
+    }
+
+    public function test_a_super_admin_cannot_delete_their_own_account(): void
+    {
+        $superAdmin = User::factory()->create();
+        $superAdmin->assignRole('super_admin');
+
+        $this->actingAs($superAdmin)->delete(route('admin.users.destroy', $superAdmin))
+            ->assertSessionHas('error');
+
+        $this->assertDatabaseHas('users', ['id' => $superAdmin->id, 'deleted_at' => null]);
+    }
+
+    public function test_deleting_one_of_two_super_admins_is_allowed_since_one_remains(): void
+    {
+        $superAdmin = User::factory()->create();
+        $superAdmin->assignRole('super_admin');
+
+        $otherAdmin = User::factory()->create();
+        $otherAdmin->assignRole('super_admin');
+
+        $this->actingAs($superAdmin)->delete(route('admin.users.destroy', $otherAdmin))
+            ->assertSessionMissing('error');
+
+        $this->assertSoftDeleted('users', ['id' => $otherAdmin->id]);
+        $this->assertTrue($superAdmin->fresh()->hasRole('super_admin'));
+    }
+
+    public function test_regular_organizer_cannot_delete_users(): void
+    {
+        $organizer = User::factory()->create();
+        $organizer->assignRole('organizer');
+
+        $target = User::factory()->create();
+
+        $this->actingAs($organizer)->delete(route('admin.users.destroy', $target))->assertForbidden();
+        $this->assertDatabaseHas('users', ['id' => $target->id, 'deleted_at' => null]);
+    }
+
+    public function test_super_admin_can_reset_a_users_password_to_the_configured_default(): void
+    {
+        $superAdmin = User::factory()->create();
+        $superAdmin->assignRole('super_admin');
+
+        $target = User::factory()->create();
+
+        $this->actingAs($superAdmin)->post(route('admin.users.reset-password', $target))
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->assertTrue(Hash::check(config('admin.default_reset_password'), $target->fresh()->password));
+    }
+
+    public function test_regular_organizer_cannot_reset_passwords(): void
+    {
+        $organizer = User::factory()->create();
+        $organizer->assignRole('organizer');
+
+        $target = User::factory()->create();
+        $originalPassword = $target->password;
+
+        $this->actingAs($organizer)->post(route('admin.users.reset-password', $target))->assertForbidden();
+
+        $this->assertSame($originalPassword, $target->fresh()->password);
     }
 }

@@ -83,6 +83,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('admin/users', [AdminUserController::class, 'index'])->name('admin.users.index');
     Route::patch('admin/users/{user}/roles', [AdminUserController::class, 'updateRoles'])->name('admin.users.roles.update');
+    Route::post('admin/users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('admin.users.reset-password');
+    Route::delete('admin/users/{user}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
 
     Route::resource('plantillas/categorias', DivisionTemplateController::class)
         ->except(['show'])

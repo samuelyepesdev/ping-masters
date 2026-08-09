@@ -1,9 +1,9 @@
 import InputError from '@/components/input-error';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler, useRef } from 'react';
 
 import HeadingSmall from '@/components/heading-small';
@@ -19,6 +19,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Password() {
+    const { auth } = usePage<SharedData>().props;
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
 
@@ -57,6 +58,8 @@ export default function Password() {
                     <HeadingSmall title="Actualizar contraseña" description="Usa una contraseña larga y aleatoria para mantener tu cuenta segura" />
 
                     <form onSubmit={updatePassword} className="space-y-6">
+                        <input type="text" name="username" autoComplete="username" value={auth.user.email} readOnly hidden />
+
                         <div className="grid gap-2">
                             <Label htmlFor="current_password">Contraseña actual</Label>
 
