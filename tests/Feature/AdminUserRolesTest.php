@@ -125,6 +125,30 @@ class AdminUserRolesTest extends TestCase
         $this->assertFalse(auth()->attempt(['email' => $target->email, 'password' => 'password']));
     }
 
+    public function test_deleted_users_email_can_be_reused_to_register_a_new_account(): void
+    {
+        $superAdmin = User::factory()->create();
+        $superAdmin->assignRole('super_admin');
+
+        $target = User::factory()->create(['email' => 'jacobo@example.com']);
+
+        $this->actingAs($superAdmin)->delete(route('admin.users.destroy', $target))->assertRedirect();
+
+        $this->assertDatabaseMissing('users', ['email' => 'jacobo@example.com']);
+
+        $this->post(route('logout'));
+
+        $response = $this->post('/register', [
+            'name' => 'Jacobo Nuevo',
+            'email' => 'jacobo@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $response->assertRedirect(route('dashboard', absolute: false));
+        $this->assertDatabaseHas('users', ['email' => 'jacobo@example.com', 'deleted_at' => null]);
+    }
+
     public function test_a_super_admin_cannot_delete_their_own_account(): void
     {
         $superAdmin = User::factory()->create();

@@ -77,6 +77,9 @@ class UserController extends Controller
             return back()->with('error', 'Debe quedar al menos un super administrador en el sistema.');
         }
 
+        // Free up the email address so someone else can register with it — the
+        // "email" unique index has no idea this row is soft-deleted.
+        $user->update(['email' => "deleted-{$user->id}-{$user->email}"]);
         $user->delete();
 
         return back()->with('success', 'Usuario eliminado.');
