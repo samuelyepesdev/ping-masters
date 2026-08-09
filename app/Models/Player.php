@@ -45,7 +45,9 @@ class Player extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        // Kept visible even after the account is soft-deleted, so this player's
+        // name still shows up in past tournament/match history.
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     public function club(): BelongsTo

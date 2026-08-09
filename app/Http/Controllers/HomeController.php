@@ -17,7 +17,9 @@ class HomeController extends Controller
             ->limit(3)
             ->get();
 
-        $topPlayers = Player::with('user')
+        $activePlayers = Player::whereHas('user', fn ($q) => $q->whereNull('deleted_at'));
+
+        $topPlayers = (clone $activePlayers)->with('user')
             ->orderByDesc('rating_current')
             ->limit(5)
             ->get();
@@ -27,8 +29,8 @@ class HomeController extends Controller
             'topPlayers' => $topPlayers,
             'stats' => [
                 'tournaments' => Tournament::count(),
-                'players' => Player::count(),
-                'matches_played' => (int) floor(Player::sum('matches_played') / 2),
+                'players' => (clone $activePlayers)->count(),
+                'matches_played' => (int) floor((clone $activePlayers)->sum('matches_played') / 2),
             ],
         ]);
     }

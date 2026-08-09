@@ -27,7 +27,9 @@ class PlayerController extends Controller
 
     public function ranking(Request $request): Response
     {
-        $query = Player::with(['user', 'club'])->orderByDesc('rating_current');
+        $query = Player::with(['user', 'club'])
+            ->whereHas('user', fn ($q) => $q->whereNull('deleted_at'))
+            ->orderByDesc('rating_current');
 
         if ($search = $request->string('search')->trim()->value()) {
             $query->whereHas('user', fn ($q) => $q->where('name', 'like', "%{$search}%"));
