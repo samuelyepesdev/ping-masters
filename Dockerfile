@@ -4,18 +4,11 @@
 FROM node:20-alpine AS assets
 
 # VITE_* values are baked into the built JS at build time, so they must be
-# available here as build args (Railway injects service variables into
-# `ARG`s declared with a matching name).
+# available here as a build arg (Railway injects service variables into
+# `ARG`s declared with a matching name). Reverb's VITE_REVERB_* aren't needed
+# since this deploy doesn't run a Reverb service (BROADCAST_CONNECTION=log).
 ARG VITE_APP_NAME
-ARG VITE_REVERB_APP_KEY
-ARG VITE_REVERB_HOST
-ARG VITE_REVERB_PORT
-ARG VITE_REVERB_SCHEME
-ENV VITE_APP_NAME=$VITE_APP_NAME \
-    VITE_REVERB_APP_KEY=$VITE_REVERB_APP_KEY \
-    VITE_REVERB_HOST=$VITE_REVERB_HOST \
-    VITE_REVERB_PORT=$VITE_REVERB_PORT \
-    VITE_REVERB_SCHEME=$VITE_REVERB_SCHEME
+ENV VITE_APP_NAME=$VITE_APP_NAME
 
 WORKDIR /app
 COPY package.json package-lock.json ./
