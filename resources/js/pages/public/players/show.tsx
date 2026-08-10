@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useInitials } from '@/hooks/use-initials';
+import { formatDate } from '@/lib/format-date';
 import SmartLayout from '@/layouts/smart-layout';
 import { buildPlayerShareText } from '@/lib/player-share';
 import { cn } from '@/lib/utils';
@@ -12,11 +13,26 @@ import { type Achievement, type BreadcrumbItem, type Player, type SharedData, ty
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { BadgeCheck, Check, Copy, Share2, Sparkles, Trophy, UserPlus, UserRoundCheck } from 'lucide-react';
 import { useState } from 'react';
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+
+interface FormResult {
+    won: boolean;
+    opponent: string | null;
+    date: string;
+    delta: number;
+}
+
+interface MonthlyForm {
+    month: string;
+    wins: number;
+    losses: number;
+}
 
 interface Props {
     player: Player;
     ratingHistory: { rating: number; date: string }[];
+    recentForm: FormResult[];
+    monthlyForm: MonthlyForm[];
     registrations: TournamentRegistration[];
     levelName: string | null;
     currentLevelXp: number;
@@ -36,6 +52,8 @@ const ALL_ACHIEVEMENT_ICONS: Record<string, string> = {
 export default function PlayerShow({
     player,
     ratingHistory,
+    recentForm,
+    monthlyForm,
     registrations,
     levelName,
     currentLevelXp,
@@ -130,8 +148,13 @@ export default function PlayerShow({
                             </div>
                             <p className="text-muted-foreground">{player.club?.name ?? 'Sin club'}</p>
                             <p className="mt-1 text-sm text-muted-foreground">
-                                <span className="font-medium text-foreground">{followersCount}</span> seguidores ·{' '}
-                                <span className="font-medium text-foreground">{player.following_count ?? 0}</span> siguiendo
+                                <Link href={route('public.players.followers', player.id)} className="hover:underline">
+                                    <span className="font-medium text-foreground">{followersCount}</span> seguidores
+                                </Link>{' '}
+                                ·{' '}
+                                <Link href={route('public.players.following', player.id)} className="hover:underline">
+                                    <span className="font-medium text-foreground">{player.following_count ?? 0}</span> siguiendo
+                                </Link>
                             </p>
                         </div>
                     </div>
@@ -196,6 +219,51 @@ export default function PlayerShow({
                                     <Tooltip />
                                     <Line type="monotone" dataKey="rating" stroke="currentColor" className="text-primary" strokeWidth={2} dot={false} />
                                 </LineChart>
+                            </ResponsiveContainer>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {recentForm.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Racha reciente</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex flex-wrap gap-2">
+                                {recentForm.map((result, index) => (
+                                    <div
+                                        key={index}
+                                        title={`${result.won ? 'Victoria' : 'Derrota'} vs ${result.opponent ?? 'rival'} · ${formatDate(result.date)} · ${result.delta >= 0 ? '+' : ''}${result.delta} rating`}
+                                        className={cn(
+                                            'flex size-9 items-center justify-center rounded-full text-sm font-bold text-white',
+                                            result.won ? 'bg-emerald-500' : 'bg-red-500',
+                                        )}
+                                    >
+                                        {result.won ? 'G' : 'P'}
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {monthlyForm.length > 1 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Partidos por mes</CardTitle>
+                        </CardHeader>
+                        <CardContent className="h-64">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={monthlyForm.map((m) => ({ ...m, month: formatDate(`${m.month}-01`, 'MMM yyyy') }))}>
+                                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                                    <YAxis allowDecimals={false} tick={{ fontSize: 12 }} width={30} />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Bar dataKey="wins" name="Ganados" fill="#10b981" radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="losses" name="Perdidos" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                                </BarChart>
                             </ResponsiveContainer>
                         </CardContent>
                     </Card>

@@ -85,4 +85,55 @@ class PlayerFollowTest extends TestCase
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page->where('isFollowing', false));
     }
+
+    public function test_followers_and_following_pages_list_the_right_players(): void
+    {
+        $target = Player::create(['user_id' => User::factory()->create()->id]);
+
+        $followerUser = User::factory()->create();
+        $followerPlayer = Player::create(['user_id' => $followerUser->id]);
+        $followerPlayer->following()->attach($target->id);
+
+        $followedPlayer = Player::create(['user_id' => User::factory()->create()->id]);
+        $target->following()->attach($followedPlayer->id);
+
+        $followersResponse = $this->get(route('public.players.followers', $target));
+        $followersResponse->assertOk();
+        $followersResponse->assertInertia(fn ($page) => $page
+            ->where('type', 'followers')
+            ->has('players.data', 1)
+            ->where('players.data.0.id', $followerPlayer->id));
+
+        $followingResponse = $this->get(route('public.players.following', $target));
+        $followingResponse->assertOk();
+        $followingResponse->assertInertia(fn ($page) => $page
+            ->where('type', 'following')
+            ->has('players.data', 1)
+            ->where('players.data.0.id', $followedPlayer->id));
+    }
+
+    public function test_connections_page_flags_which_players_the_viewer_already_follows(): void
+    {
+        $viewerUser = User::factory()->create();
+        $viewerPlayer = Player::create(['user_id' => $viewerUser->id]);
+
+        $target = Player::create(['user_id' => User::factory()->create()->id]);
+        $alreadyFollowed = Player::create(['user_id' => User::factory()->create()->id]);
+        $notFollowed = Player::create(['user_id' => User::factory()->create()->id]);
+
+        $target->following()->attach([$alreadyFollowed->id, $notFollowed->id]);
+        $viewerPlayer->following()->attach($alreadyFollowed->id);
+
+        $response = $this->actingAs($viewerUser)->get(route('public.players.following', $target));
+
+        $response->assertOk();
+        $response->assertInertia(function ($page) use ($viewerPlayer, $alreadyFollowed, $notFollowed) {
+            $page->where('viewerPlayerId', $viewerPlayer->id);
+
+            $byId = collect($page->toArray()['props']['players']['data'])->keyBy('id');
+
+            $this->assertTrue($byId[$alreadyFollowed->id]['is_following']);
+            $this->assertFalse($byId[$notFollowed->id]['is_following']);
+        });
+    }
 }

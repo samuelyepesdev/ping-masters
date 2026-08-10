@@ -95,7 +95,7 @@ class Player extends Model
      */
     public function following(): BelongsToMany
     {
-        return $this->belongsToMany(Player::class, 'player_follows', 'follower_player_id', 'followed_player_id');
+        return $this->belongsToMany(Player::class, 'player_follows', 'follower_player_id', 'followed_player_id')->withTimestamps();
     }
 
     /**
@@ -103,7 +103,7 @@ class Player extends Model
      */
     public function followers(): BelongsToMany
     {
-        return $this->belongsToMany(Player::class, 'player_follows', 'followed_player_id', 'follower_player_id');
+        return $this->belongsToMany(Player::class, 'player_follows', 'followed_player_id', 'follower_player_id')->withTimestamps();
     }
 
     public function isFollowing(Player $player): bool

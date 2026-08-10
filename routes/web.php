@@ -28,6 +28,8 @@ Route::post('torneos/{tournament:slug}/inscribirse', [PublicTournamentController
 Route::get('partidos/{match}', [PublicMatchController::class, 'show'])->name('public.matches.show');
 Route::get('ranking', [PublicPlayerController::class, 'ranking'])->name('public.players.ranking');
 Route::get('jugadores/{player}', [PublicPlayerController::class, 'show'])->name('public.players.show');
+Route::get('jugadores/{player}/seguidores', [PublicPlayerController::class, 'followers'])->name('public.players.followers');
+Route::get('jugadores/{player}/siguiendo', [PublicPlayerController::class, 'followingList'])->name('public.players.following');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');

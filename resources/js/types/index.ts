@@ -84,6 +84,7 @@ export interface Player {
     achievements?: Achievement[];
     followers_count?: number;
     following_count?: number;
+    is_following?: boolean;
     [key: string]: unknown;
 }
 
