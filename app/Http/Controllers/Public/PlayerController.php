@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\Level;
 use App\Models\Player;
+use App\Services\Scouting\ScoutingReportService;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,6 +14,8 @@ use Inertia\Response;
 
 class PlayerController extends Controller
 {
+    public function __construct(private readonly ScoutingReportService $scoutingReportService) {}
+
     public function me(Request $request): RedirectResponse
     {
         $player = $this->playerFor($request);
@@ -81,6 +84,7 @@ class PlayerController extends Controller
             'ratingHistory' => $ratingHistory,
             'recentForm' => $recentForm,
             'monthlyForm' => $monthlyForm,
+            'scoutingReport' => $this->scoutingReportService->forPlayer($player),
             'registrations' => $registrations,
             'levelName' => $level?->name,
             'currentLevelXp' => $level?->xp_required ?? 0,

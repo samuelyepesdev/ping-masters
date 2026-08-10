@@ -11,7 +11,7 @@ import { buildPlayerShareText } from '@/lib/player-share';
 import { cn } from '@/lib/utils';
 import { type Achievement, type BreadcrumbItem, type Player, type SharedData, type TournamentRegistration } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { BadgeCheck, Check, Copy, Share2, Sparkles, Trophy, UserPlus, UserRoundCheck } from 'lucide-react';
+import { BadgeCheck, Check, Copy, Flame, Share2, Sparkles, Swords, Target, Trophy, UserPlus, UserRoundCheck } from 'lucide-react';
 import { useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
@@ -28,11 +28,19 @@ interface MonthlyForm {
     losses: number;
 }
 
+interface ScoutingReport {
+    games_analyzed: number;
+    deuce: { played: number; won: number; win_rate: number | null };
+    decider: { played: number; won: number; win_rate: number | null };
+    best_streak: { points: number; opponent: string | null; date: string | null };
+}
+
 interface Props {
     player: Player;
     ratingHistory: { rating: number; date: string }[];
     recentForm: FormResult[];
     monthlyForm: MonthlyForm[];
+    scoutingReport: ScoutingReport;
     registrations: TournamentRegistration[];
     levelName: string | null;
     currentLevelXp: number;
@@ -54,6 +62,7 @@ export default function PlayerShow({
     ratingHistory,
     recentForm,
     monthlyForm,
+    scoutingReport,
     registrations,
     levelName,
     currentLevelXp,
@@ -265,6 +274,46 @@ export default function PlayerShow({
                                     <Bar dataKey="losses" name="Perdidos" fill="#ef4444" radius={[4, 4, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {scoutingReport.games_analyzed > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Reporte de scouting</CardTitle>
+                        </CardHeader>
+                        <CardContent className="grid gap-4 sm:grid-cols-3">
+                            <div className="flex items-start gap-3 rounded-lg border p-4">
+                                <Target className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+                                <div>
+                                    <p className="text-2xl font-bold tabular-nums">{scoutingReport.deuce.win_rate ?? '—'}%</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        En deuces ({scoutingReport.deuce.won}-{scoutingReport.deuce.played - scoutingReport.deuce.won} en{' '}
+                                        {scoutingReport.deuce.played} sets)
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-3 rounded-lg border p-4">
+                                <Swords className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+                                <div>
+                                    <p className="text-2xl font-bold tabular-nums">{scoutingReport.decider.win_rate ?? '—'}%</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        En sets decisivos ({scoutingReport.decider.won}-{scoutingReport.decider.played - scoutingReport.decider.won}{' '}
+                                        en {scoutingReport.decider.played})
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-3 rounded-lg border p-4">
+                                <Flame className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+                                <div>
+                                    <p className="text-2xl font-bold tabular-nums">{scoutingReport.best_streak.points}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        Mejor racha de puntos
+                                        {scoutingReport.best_streak.opponent ? ` vs ${scoutingReport.best_streak.opponent}` : ''}
+                                    </p>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
                 )}
