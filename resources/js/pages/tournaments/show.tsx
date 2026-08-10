@@ -6,11 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { formatDateRange } from '@/lib/format-date';
+import { buildTournamentInviteText } from '@/lib/tournament-invite';
 import { type BreadcrumbItem, type PaginatedData, type RegistrationStatus, type Tournament, type TournamentRegistration } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { FileDown, Pencil } from 'lucide-react';
+import { Check, Copy, FileDown, Pencil, Share2 } from 'lucide-react';
 import { useState } from 'react';
 
 const REGISTRATION_STATUS_LABELS: Record<RegistrationStatus, string> = {
@@ -29,6 +31,28 @@ export default function TournamentShow({
     registrations: PaginatedData<TournamentRegistration>;
 }) {
     const [viewing, setViewing] = useState<TournamentRegistration | null>(null);
+    const [sharing, setSharing] = useState(false);
+    const [copied, setCopied] = useState(false);
+
+    const inviteText = buildTournamentInviteText(tournament);
+
+    async function copyInviteText() {
+        await navigator.clipboard.writeText(inviteText);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    }
+
+    async function shareInviteText() {
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: tournament.name, text: inviteText });
+            } catch {
+                // The user cancelled the native share sheet — nothing to do.
+            }
+        } else {
+            await copyInviteText();
+        }
+    }
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Torneos', href: '/tournaments' },
@@ -59,6 +83,10 @@ export default function TournamentShow({
                         </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
+                        <Button variant="outline" onClick={() => setSharing(true)}>
+                            <Share2 className="size-4" />
+                            Compartir
+                        </Button>
                         <Button variant="outline" asChild>
                             <a href={route('tournaments.pdf.schedule', tournament.id)} target="_blank" rel="noopener noreferrer">
                                 <FileDown className="size-4" />
@@ -199,6 +227,25 @@ export default function TournamentShow({
                         ) : (
                             <p className="text-sm text-muted-foreground">Sin respuestas adicionales.</p>
                         )}
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={sharing} onOpenChange={setSharing}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Invitar al torneo</DialogTitle>
+                    </DialogHeader>
+                    <Textarea value={inviteText} readOnly rows={8} className="resize-none text-sm" />
+                    <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={copyInviteText}>
+                            {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+                            {copied ? 'Copiado' : 'Copiar texto'}
+                        </Button>
+                        <Button onClick={shareInviteText}>
+                            <Share2 className="size-4" />
+                            Compartir
+                        </Button>
                     </div>
                 </DialogContent>
             </Dialog>
