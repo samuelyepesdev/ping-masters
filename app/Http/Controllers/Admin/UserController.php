@@ -38,6 +38,36 @@ class UserController extends Controller
         ]);
     }
 
+    public function store(Request $request)
+    {
+        abort_unless($request->user()->isSuperAdmin(), 403);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => [
+                'required',
+                'string',
+                'lowercase',
+                'email',
+                'max:255',
+                Rule::unique(User::class)->withoutTrashed(),
+            ],
+        ]);
+
+        $default = config('admin.default_reset_password');
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($default),
+        ]);
+        // "email_verified_at" isn't mass-assignable (see User::$fillable), so it must
+        // be set explicitly — an admin-created account is presumed pre-verified.
+        $user->forceFill(['email_verified_at' => now()])->save();
+
+        return back()->with('success', "Usuario creado. Contraseña temporal: {$default}. Compártela para que la cambie al entrar.");
+    }
+
     public function updateRoles(Request $request, User $user)
     {
         abort_unless($request->user()->isSuperAdmin(), 403);

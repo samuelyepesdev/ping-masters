@@ -7,12 +7,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import InputError from '@/components/input-error';
 import { useInitials } from '@/hooks/use-initials';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type PaginatedData, type User } from '@/types';
-import { Head, router } from '@inertiajs/react';
-import { KeyRound, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { KeyRound, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 const ROLE_LABELS: Record<string, string> = {
@@ -36,10 +38,24 @@ export default function AdminUsersIndex({ users, filters, availableRoles }: Prop
     const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
     const [pendingDelete, setPendingDelete] = useState<User | null>(null);
     const [pendingReset, setPendingReset] = useState<User | null>(null);
+    const [creating, setCreating] = useState(false);
+
+    const createForm = useForm({ name: '', email: '' });
 
     const submitSearch: FormEventHandler = (e) => {
         e.preventDefault();
         router.get(route('admin.users.index'), { search }, { preserveState: true, replace: true });
+    };
+
+    const submitCreate: FormEventHandler = (e) => {
+        e.preventDefault();
+        createForm.post(route('admin.users.store'), {
+            preserveScroll: true,
+            onSuccess: () => {
+                createForm.reset();
+                setCreating(false);
+            },
+        });
     };
 
     function openEdit(user: User) {
@@ -77,9 +93,15 @@ export default function AdminUsersIndex({ users, filters, availableRoles }: Prop
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Usuarios y roles" />
             <div className="space-y-6 p-4">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Usuarios y roles</h1>
-                    <p className="text-muted-foreground">Administra quién puede organizar, arbitrar o jugar en la plataforma.</p>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold tracking-tight">Usuarios y roles</h1>
+                        <p className="text-muted-foreground">Administra quién puede organizar, arbitrar o jugar en la plataforma.</p>
+                    </div>
+                    <Button onClick={() => setCreating(true)}>
+                        <Plus className="size-4" />
+                        Nuevo usuario
+                    </Button>
                 </div>
 
                 <form onSubmit={submitSearch} className="max-w-sm">
@@ -183,6 +205,54 @@ export default function AdminUsersIndex({ users, filters, availableRoles }: Prop
                         </Button>
                         <Button onClick={saveRoles}>Guardar</Button>
                     </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog
+                open={creating}
+                onOpenChange={(open) => {
+                    setCreating(open);
+                    if (!open) createForm.reset();
+                }}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Nuevo usuario</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={submitCreate} className="space-y-4">
+                        <div className="grid gap-1.5">
+                            <Label htmlFor="new-user-name">Nombre</Label>
+                            <Input
+                                id="new-user-name"
+                                value={createForm.data.name}
+                                onChange={(e) => createForm.setData('name', e.target.value)}
+                                autoComplete="off"
+                            />
+                            <InputError message={createForm.errors.name} />
+                        </div>
+                        <div className="grid gap-1.5">
+                            <Label htmlFor="new-user-email">Correo electrónico</Label>
+                            <Input
+                                id="new-user-email"
+                                type="email"
+                                value={createForm.data.email}
+                                onChange={(e) => createForm.setData('email', e.target.value)}
+                                autoComplete="off"
+                            />
+                            <InputError message={createForm.errors.email} />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Se le asignará una contraseña temporal por defecto, que verás en un mensaje después de crearlo.
+                        </p>
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => setCreating(false)}>
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={createForm.processing}>
+                                Crear usuario
+                            </Button>
+                        </DialogFooter>
+                    </form>
                 </DialogContent>
             </Dialog>
 

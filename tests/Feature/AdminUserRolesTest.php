@@ -186,6 +186,55 @@ class AdminUserRolesTest extends TestCase
         $this->assertDatabaseHas('users', ['id' => $target->id, 'deleted_at' => null]);
     }
 
+    public function test_super_admin_can_create_a_user_with_a_temporary_password(): void
+    {
+        $superAdmin = User::factory()->create();
+        $superAdmin->assignRole('super_admin');
+
+        $response = $this->actingAs($superAdmin)->post(route('admin.users.store'), [
+            'name' => 'Jugador Nuevo',
+            'email' => 'jugador-nuevo@example.com',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $created = User::where('email', 'jugador-nuevo@example.com')->first();
+        $this->assertNotNull($created);
+        $this->assertSame('Jugador Nuevo', $created->name);
+        $this->assertNotNull($created->email_verified_at);
+        $this->assertTrue(Hash::check(config('admin.default_reset_password'), $created->password));
+    }
+
+    public function test_creating_a_user_requires_a_unique_email(): void
+    {
+        $superAdmin = User::factory()->create();
+        $superAdmin->assignRole('super_admin');
+
+        $existing = User::factory()->create();
+
+        $response = $this->actingAs($superAdmin)->post(route('admin.users.store'), [
+            'name' => 'Duplicado',
+            'email' => $existing->email,
+        ]);
+
+        $response->assertSessionHasErrors('email');
+    }
+
+    public function test_regular_organizer_cannot_create_users(): void
+    {
+        $organizer = User::factory()->create();
+        $organizer->assignRole('organizer');
+
+        $response = $this->actingAs($organizer)->post(route('admin.users.store'), [
+            'name' => 'Intento',
+            'email' => 'intento@example.com',
+        ]);
+
+        $response->assertForbidden();
+        $this->assertDatabaseMissing('users', ['email' => 'intento@example.com']);
+    }
+
     public function test_super_admin_can_reset_a_users_password_to_the_configured_default(): void
     {
         $superAdmin = User::factory()->create();

@@ -26,9 +26,11 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Admin Ping Masters',
                 'password' => Hash::make(config('admin.password')),
-                'email_verified_at' => now(),
             ],
         );
+        // "email_verified_at" isn't mass-assignable (see User::$fillable), so
+        // updateOrCreate() above silently drops it — set it explicitly instead.
+        $admin->forceFill(['email_verified_at' => now()])->save();
         $admin->assignRole('super_admin');
     }
 }

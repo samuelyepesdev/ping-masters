@@ -87,6 +87,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('jugadores/{player}/seguir', [PublicPlayerController::class, 'unfollow'])->name('public.players.unfollow');
 
     Route::get('admin/users', [AdminUserController::class, 'index'])->name('admin.users.index');
+    Route::post('admin/users', [AdminUserController::class, 'store'])->name('admin.users.store');
     Route::patch('admin/users/{user}/roles', [AdminUserController::class, 'updateRoles'])->name('admin.users.roles.update');
     Route::post('admin/users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('admin.users.reset-password');
     Route::delete('admin/users/{user}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
