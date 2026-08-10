@@ -90,6 +90,27 @@ class Player extends Model
         return $this->belongsToMany(Achievement::class, 'player_achievements')->withPivot('unlocked_at');
     }
 
+    /**
+     * Players this player follows.
+     */
+    public function following(): BelongsToMany
+    {
+        return $this->belongsToMany(Player::class, 'player_follows', 'follower_player_id', 'followed_player_id');
+    }
+
+    /**
+     * Players following this player.
+     */
+    public function followers(): BelongsToMany
+    {
+        return $this->belongsToMany(Player::class, 'player_follows', 'followed_player_id', 'follower_player_id');
+    }
+
+    public function isFollowing(Player $player): bool
+    {
+        return $this->following()->where('players.id', $player->id)->exists();
+    }
+
     public function winRate(): float
     {
         if ($this->matches_played === 0) {

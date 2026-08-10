@@ -14,13 +14,7 @@ class PlayerController extends Controller
 {
     public function me(Request $request): RedirectResponse
     {
-        $user = $request->user();
-
-        $player = Player::firstOrCreate(['user_id' => $user->id], ['club_id' => $user->club_id]);
-
-        if (! $user->hasRole('player')) {
-            $user->assignRole('player');
-        }
+        $player = $this->playerFor($request);
 
         return redirect()->route('public.players.show', $player->id);
     }
@@ -43,9 +37,10 @@ class PlayerController extends Controller
         ]);
     }
 
-    public function show(Player $player): Response
+    public function show(Request $request, Player $player): Response
     {
         $player->load(['user', 'club', 'achievements']);
+        $player->loadCount(['followers', 'following']);
 
         $ratingHistory = $player->ratingHistory()
             ->select('rating_after', 'created_at')
@@ -60,6 +55,8 @@ class PlayerController extends Controller
         $level = Level::where('level_number', $player->level)->first();
         $nextLevel = Level::where('level_number', $player->level + 1)->first();
 
+        $viewer = $request->user()?->player;
+
         return Inertia::render('public/players/show', [
             'player' => $player,
             'ratingHistory' => $ratingHistory,
@@ -67,6 +64,43 @@ class PlayerController extends Controller
             'levelName' => $level?->name,
             'currentLevelXp' => $level?->xp_required ?? 0,
             'nextLevelXp' => $nextLevel?->xp_required,
+            'isFollowing' => $viewer ? $viewer->isFollowing($player) : false,
+            'isOwnProfile' => $viewer?->id === $player->id,
         ]);
+    }
+
+    public function follow(Request $request, Player $player): RedirectResponse
+    {
+        $viewer = $this->playerFor($request);
+
+        if ($viewer->id === $player->id) {
+            return back()->with('error', 'No puedes seguirte a ti mismo.');
+        }
+
+        $viewer->following()->syncWithoutDetaching([$player->id]);
+
+        return back();
+    }
+
+    public function unfollow(Request $request, Player $player): RedirectResponse
+    {
+        $viewer = $this->playerFor($request);
+
+        $viewer->following()->detach($player->id);
+
+        return back();
+    }
+
+    private function playerFor(Request $request): Player
+    {
+        $user = $request->user();
+
+        $player = Player::firstOrCreate(['user_id' => $user->id], ['club_id' => $user->club_id]);
+
+        if (! $user->hasRole('player')) {
+            $user->assignRole('player');
+        }
+
+        return $player;
     }
 }

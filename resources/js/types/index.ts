@@ -82,6 +82,8 @@ export interface Player {
     user?: User;
     club?: Club | null;
     achievements?: Achievement[];
+    followers_count?: number;
+    following_count?: number;
     [key: string]: unknown;
 }
 

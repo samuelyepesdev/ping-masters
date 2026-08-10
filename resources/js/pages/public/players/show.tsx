@@ -1,12 +1,17 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import { useInitials } from '@/hooks/use-initials';
 import SmartLayout from '@/layouts/smart-layout';
+import { buildPlayerShareText } from '@/lib/player-share';
 import { cn } from '@/lib/utils';
-import { type Achievement, type BreadcrumbItem, type Player, type TournamentRegistration } from '@/types';
-import { Head, Link } from '@inertiajs/react';
-import { BadgeCheck, Sparkles, Trophy } from 'lucide-react';
+import { type Achievement, type BreadcrumbItem, type Player, type SharedData, type TournamentRegistration } from '@/types';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { BadgeCheck, Check, Copy, Share2, Sparkles, Trophy, UserPlus, UserRoundCheck } from 'lucide-react';
+import { useState } from 'react';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 interface Props {
@@ -16,6 +21,8 @@ interface Props {
     levelName: string | null;
     currentLevelXp: number;
     nextLevelXp: number | null;
+    isFollowing: boolean;
+    isOwnProfile: boolean;
 }
 
 const ALL_ACHIEVEMENT_ICONS: Record<string, string> = {
@@ -26,8 +33,62 @@ const ALL_ACHIEVEMENT_ICONS: Record<string, string> = {
     champion: '🏆',
 };
 
-export default function PlayerShow({ player, ratingHistory, registrations, levelName, currentLevelXp, nextLevelXp }: Props) {
+export default function PlayerShow({
+    player,
+    ratingHistory,
+    registrations,
+    levelName,
+    currentLevelXp,
+    nextLevelXp,
+    isFollowing,
+    isOwnProfile,
+}: Props) {
     const getInitials = useInitials();
+    const { auth } = usePage<SharedData>().props;
+    const [following, setFollowing] = useState(isFollowing);
+    const [followersCount, setFollowersCount] = useState(player.followers_count ?? 0);
+    const [toggling, setToggling] = useState(false);
+    const [sharing, setSharing] = useState(false);
+    const [copied, setCopied] = useState(false);
+
+    const shareText = buildPlayerShareText(player, levelName);
+
+    async function copyShareText() {
+        await navigator.clipboard.writeText(shareText);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    }
+
+    async function shareCard() {
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: player.user?.name, text: shareText });
+            } catch {
+                // The user cancelled the native share sheet — nothing to do.
+            }
+        } else {
+            await copyShareText();
+        }
+    }
+
+    function toggleFollow() {
+        setToggling(true);
+        const wasFollowing = following;
+        const options = {
+            preserveScroll: true,
+            onSuccess: () => {
+                setFollowing(!wasFollowing);
+                setFollowersCount((count) => count + (wasFollowing ? -1 : 1));
+            },
+            onFinish: () => setToggling(false),
+        };
+
+        if (wasFollowing) {
+            router.delete(route('public.players.unfollow', player.id), options);
+        } else {
+            router.post(route('public.players.follow', player.id), {}, options);
+        }
+    }
 
     const xpIntoLevel = player.xp_total - currentLevelXp;
     const xpForLevel = nextLevelXp ? nextLevelXp - currentLevelXp : null;
@@ -45,28 +106,56 @@ export default function PlayerShow({ player, ratingHistory, registrations, level
             <Head title={player.user?.name ?? 'Jugador'} />
 
             <div className="space-y-8">
-                <div className="flex flex-wrap items-center gap-4">
-                    <Avatar className="size-16">
-                        <AvatarImage src={player.user?.avatar ?? undefined} alt={player.user?.name ?? ''} />
-                        <AvatarFallback className="text-xl">{getInitials(player.user?.name ?? '?')}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <h1 className="text-2xl font-bold tracking-tight">{player.user?.name}</h1>
-                            {player.is_elite && (
-                                <Badge className="border-transparent bg-amber-500/15 text-amber-700 dark:text-amber-400">
-                                    <Sparkles className="mr-1 size-3.5" />
-                                    Élite
-                                </Badge>
-                            )}
-                            {player.user?.email_verified_at && (
-                                <Badge className="border-transparent bg-blue-500/15 text-blue-700 dark:text-blue-400">
-                                    <BadgeCheck className="mr-1 size-3.5" />
-                                    Verificado
-                                </Badge>
-                            )}
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div className="flex flex-wrap items-center gap-4">
+                        <Avatar className="size-16">
+                            <AvatarImage src={player.user?.avatar ?? undefined} alt={player.user?.name ?? ''} />
+                            <AvatarFallback className="text-xl">{getInitials(player.user?.name ?? '?')}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h1 className="text-2xl font-bold tracking-tight">{player.user?.name}</h1>
+                                {player.is_elite && (
+                                    <Badge className="border-transparent bg-amber-500/15 text-amber-700 dark:text-amber-400">
+                                        <Sparkles className="mr-1 size-3.5" />
+                                        Élite
+                                    </Badge>
+                                )}
+                                {player.user?.email_verified_at && (
+                                    <Badge className="border-transparent bg-blue-500/15 text-blue-700 dark:text-blue-400">
+                                        <BadgeCheck className="mr-1 size-3.5" />
+                                        Verificado
+                                    </Badge>
+                                )}
+                            </div>
+                            <p className="text-muted-foreground">{player.club?.name ?? 'Sin club'}</p>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                <span className="font-medium text-foreground">{followersCount}</span> seguidores ·{' '}
+                                <span className="font-medium text-foreground">{player.following_count ?? 0}</span> siguiendo
+                            </p>
                         </div>
-                        <p className="text-muted-foreground">{player.club?.name ?? 'Sin club'}</p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                        <Button variant="outline" onClick={() => setSharing(true)}>
+                            <Share2 className="size-4" />
+                            Compartir
+                        </Button>
+
+                        {!isOwnProfile &&
+                            (auth.user ? (
+                                <Button variant={following ? 'outline' : 'default'} disabled={toggling} onClick={toggleFollow}>
+                                    {following ? <UserRoundCheck className="size-4" /> : <UserPlus className="size-4" />}
+                                    {following ? 'Siguiendo' : 'Seguir'}
+                                </Button>
+                            ) : (
+                                <Button variant="outline" asChild>
+                                    <Link href={route('login')}>
+                                        <UserPlus className="size-4" />
+                                        Inicia sesión para seguir
+                                    </Link>
+                                </Button>
+                            ))}
                     </div>
                 </div>
 
@@ -159,6 +248,25 @@ export default function PlayerShow({ player, ratingHistory, registrations, level
                     </CardContent>
                 </Card>
             </div>
+
+            <Dialog open={sharing} onOpenChange={setSharing}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Compartir perfil</DialogTitle>
+                    </DialogHeader>
+                    <Textarea value={shareText} readOnly rows={6} className="resize-none text-sm" />
+                    <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={copyShareText}>
+                            {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+                            {copied ? 'Copiado' : 'Copiar texto'}
+                        </Button>
+                        <Button onClick={shareCard}>
+                            <Share2 className="size-4" />
+                            Compartir
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </SmartLayout>
     );
 }

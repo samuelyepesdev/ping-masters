@@ -1,6 +1,6 @@
 import '../css/app.css';
 
-import { createInertiaApp } from '@inertiajs/react';
+import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { route as routeFn } from 'ziggy-js';
@@ -27,3 +27,13 @@ createInertiaApp({
 
 // This will set light / dark mode on load...
 initializeTheme();
+
+// Workaround for a known Radix UI + Inertia race: a dialog/select can close at the
+// exact moment a page visit re-renders the tree, so Radix's own cleanup never runs
+// and leaves `pointer-events: none` stuck on <body>, freezing the whole page until
+// a manual reload. Clear it defensively after every visit finishes.
+router.on('finish', () => {
+    if (document.body.style.pointerEvents === 'none') {
+        document.body.style.pointerEvents = '';
+    }
+});
