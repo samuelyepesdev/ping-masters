@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\SeasonController as AdminSeasonController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\CasualMatchController;
 use App\Http\Controllers\DashboardController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\MatchScoringController;
 use App\Http\Controllers\PdfController;
 use App\Http\Controllers\Public\MatchController as PublicMatchController;
 use App\Http\Controllers\Public\PlayerController as PublicPlayerController;
+use App\Http\Controllers\Public\SeasonController as PublicSeasonController;
 use App\Http\Controllers\Public\TournamentController as PublicTournamentController;
 use App\Http\Controllers\RefereeController;
 use App\Http\Controllers\TournamentController;
@@ -30,6 +32,8 @@ Route::get('ranking', [PublicPlayerController::class, 'ranking'])->name('public.
 Route::get('jugadores/{player}', [PublicPlayerController::class, 'show'])->name('public.players.show');
 Route::get('jugadores/{player}/seguidores', [PublicPlayerController::class, 'followers'])->name('public.players.followers');
 Route::get('jugadores/{player}/siguiendo', [PublicPlayerController::class, 'followingList'])->name('public.players.following');
+Route::get('temporadas', [PublicSeasonController::class, 'index'])->name('public.seasons.index');
+Route::get('temporadas/{season}', [PublicSeasonController::class, 'show'])->name('public.seasons.show');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -91,6 +95,9 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('admin/users/{user}/roles', [AdminUserController::class, 'updateRoles'])->name('admin.users.roles.update');
     Route::post('admin/users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('admin.users.reset-password');
     Route::delete('admin/users/{user}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
+
+    Route::get('admin/seasons', [AdminSeasonController::class, 'index'])->name('admin.seasons.index');
+    Route::post('admin/seasons/reset', [AdminSeasonController::class, 'reset'])->name('admin.seasons.reset');
 
     Route::resource('plantillas/categorias', DivisionTemplateController::class)
         ->except(['show'])

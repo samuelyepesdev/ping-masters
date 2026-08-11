@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Gamepad2, LayoutGrid, LayoutTemplate, ListChecks, Shield, Swords, Trophy, User as UserIcon } from 'lucide-react';
+import { BookOpen, CalendarRange, Gamepad2, LayoutGrid, LayoutTemplate, ListChecks, Shield, Swords, Trophy, User as UserIcon } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const footerNavItems: NavItem[] = [
@@ -87,6 +87,11 @@ export function AppSidebar() {
                       title: 'Usuarios y Roles',
                       url: '/admin/users',
                       icon: Shield,
+                  },
+                  {
+                      title: 'Temporadas',
+                      url: '/admin/seasons',
+                      icon: CalendarRange,
                   },
               ]
             : []),

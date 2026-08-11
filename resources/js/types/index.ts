@@ -88,6 +88,25 @@ export interface Player {
     [key: string]: unknown;
 }
 
+export interface Season {
+    id: number;
+    name: string;
+    started_at: string;
+    ended_at: string | null;
+    standings_count?: number;
+    [key: string]: unknown;
+}
+
+export interface SeasonStandingRow {
+    rank: number;
+    player_id: number;
+    name: string | null;
+    avatar: string | null;
+    club: string | null;
+    rating: number;
+    matches_played: number;
+}
+
 export type TournamentStatus = 'draft' | 'registration_open' | 'registration_closed' | 'in_progress' | 'completed' | 'cancelled';
 
 export type DivisionCategoryType = 'singles' | 'doubles' | 'team';

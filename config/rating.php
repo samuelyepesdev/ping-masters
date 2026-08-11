@@ -24,4 +24,5 @@ return [
     'elite_min_matches' => 100,
 
     'starting_rating' => 1000,
+    'starting_rating_deviation' => 350,
 ];

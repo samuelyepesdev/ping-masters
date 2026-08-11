@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\Level;
 use App\Models\Player;
+use App\Models\Season;
 use App\Services\Scouting\ScoutingReportService;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\RedirectResponse;
@@ -38,6 +39,7 @@ class PlayerController extends Controller
         return Inertia::render('public/players/ranking', [
             'players' => $players,
             'filters' => $request->only('search'),
+            'currentSeasonName' => Season::current()->name,
         ]);
     }
 

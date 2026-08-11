@@ -11,7 +11,13 @@ import { Head, Link, router } from '@inertiajs/react';
 import { Crown, Search, Sparkles } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
-export default function PlayerRanking({ players, filters }: { players: PaginatedData<Player>; filters: { search?: string } }) {
+interface Props {
+    players: PaginatedData<Player>;
+    filters: { search?: string };
+    currentSeasonName: string;
+}
+
+export default function PlayerRanking({ players, filters, currentSeasonName }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const getInitials = useInitials();
 
@@ -27,9 +33,14 @@ export default function PlayerRanking({ players, filters }: { players: Paginated
     return (
         <SmartLayout breadcrumbs={breadcrumbs}>
             <Head title="Ranking" />
-            <div className="mb-6 space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">Ranking de jugadores</h1>
-                <p className="text-muted-foreground">Clasificación por rating ELO.</p>
+            <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div className="space-y-2">
+                    <h1 className="text-3xl font-bold tracking-tight">Ranking de jugadores</h1>
+                    <p className="text-muted-foreground">Clasificación por rating ELO · {currentSeasonName}</p>
+                </div>
+                <Link href={route('public.seasons.index')} className="text-sm text-muted-foreground hover:underline">
+                    Ver temporadas anteriores →
+                </Link>
             </div>
 
             {showPodium && <Podium players={players.data.slice(0, 3)} getInitials={getInitials} />}
