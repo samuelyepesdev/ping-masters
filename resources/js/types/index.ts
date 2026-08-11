@@ -312,6 +312,7 @@ export interface MatchScoreState {
     entrant2_name: string;
     best_of: number;
     points_to_win: number;
+    wager_points?: number | null;
     score_summary: string | null;
     winner_entrant_id: number | null;
     games: MatchGameState[];

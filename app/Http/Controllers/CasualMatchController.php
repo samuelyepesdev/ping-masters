@@ -45,11 +45,13 @@ class CasualMatchController extends Controller
                 'creator_name' => $match->creator->user->name,
                 'opponent_name' => $match->opponent?->user->name,
                 'score_summary' => $match->score_summary,
+                'wager_points' => $match->wager_points,
                 'is_mine_to_join' => $match->status === 'waiting' && $match->creator_player_id !== $player->id,
             ]);
 
         return Inertia::render('games/index', [
             'matches' => $matches,
+            'pendingWager' => $request->session()->get('pendingWager'),
         ]);
     }
 
@@ -59,6 +61,7 @@ class CasualMatchController extends Controller
             'match_type' => 'required|in:ranked,friendly',
             'best_of' => 'required|in:5,7',
             'points_to_win' => 'required|integer|min:5|max:21',
+            'wager_points' => 'nullable|integer|min:1|max:500',
         ]);
 
         $user = $request->user();
@@ -74,6 +77,8 @@ class CasualMatchController extends Controller
             'status' => 'waiting',
             'best_of' => (int) $validated['best_of'],
             'points_to_win' => (int) $validated['points_to_win'],
+            // A wager only makes sense on a ranked match, since it rides on the ELO change.
+            'wager_points' => $validated['match_type'] === 'ranked' ? $validated['wager_points'] ?? null : null,
             'creator_player_id' => $player->id,
         ]);
 
@@ -84,6 +89,7 @@ class CasualMatchController extends Controller
     {
         $validated = $request->validate([
             'code' => 'required|string|max:8',
+            'accept_wager' => 'nullable|boolean',
         ]);
 
         $match = CasualMatch::where('code', strtoupper(trim($validated['code'])))->first();
@@ -101,6 +107,12 @@ class CasualMatchController extends Controller
 
         if ($match->status !== 'waiting') {
             return back()->withErrors(['code' => 'Este reto ya no está disponible para unirse.'])->withInput();
+        }
+
+        // Wagered retos need an explicit accept from the joining player — the code alone
+        // isn't consent to the stakes.
+        if ($match->wager_points && ! $request->boolean('accept_wager')) {
+            return back()->with('pendingWager', ['code' => $match->code, 'wager_points' => $match->wager_points]);
         }
 
         if (! $user->hasRole('player')) {

@@ -21,7 +21,7 @@ export default function PublicMatchShow({
     const [match, setMatch] = useState(initialMatch);
 
     useEffect(() => setMatch(initialMatch), [initialMatch]);
-    useMatchChannel(match.id, setMatch);
+    useMatchChannel(match.id, match.status, setMatch);
 
     const previousStatus = useRef(match.status);
     useEffect(() => {

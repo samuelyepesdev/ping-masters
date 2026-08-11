@@ -50,12 +50,12 @@ class EloRatingService
      */
     public function applyCasualMatchResult(CasualMatch $match, Player $winner, Player $loser): void
     {
-        $this->applyRatingChange($winner, $loser, matchId: null, casualMatchId: $match->id);
+        $this->applyRatingChange($winner, $loser, matchId: null, casualMatchId: $match->id, wager: $match->wager_points ?? 0);
     }
 
-    private function applyRatingChange(Player $winner, Player $loser, ?int $matchId, ?int $casualMatchId): void
+    private function applyRatingChange(Player $winner, Player $loser, ?int $matchId, ?int $casualMatchId, int $wager = 0): void
     {
-        DB::transaction(function () use ($winner, $loser, $matchId, $casualMatchId) {
+        DB::transaction(function () use ($winner, $loser, $matchId, $casualMatchId, $wager) {
             $winnerK = $this->kFactor($winner);
             $loserK = $this->kFactor($loser);
 
@@ -65,8 +65,10 @@ class EloRatingService
             $winnerRatingBefore = $winner->rating_current;
             $loserRatingBefore = $loser->rating_current;
 
-            $winnerRatingAfter = (int) round($winnerRatingBefore + $winnerK * (1 - $winnerExpected));
-            $loserRatingAfter = max(0, (int) round($loserRatingBefore + $loserK * (0 - $loserExpected)));
+            // The wagered amount, if any, transfers on top of the normal ELO swing —
+            // agreed by both players when the loser accepted the reto's wager.
+            $winnerRatingAfter = (int) round($winnerRatingBefore + $winnerK * (1 - $winnerExpected)) + $wager;
+            $loserRatingAfter = max(0, (int) round($loserRatingBefore + $loserK * (0 - $loserExpected)) - $wager);
 
             $eliteThreshold = config('rating.elite_rating_threshold');
             $eliteMinMatches = config('rating.elite_min_matches');

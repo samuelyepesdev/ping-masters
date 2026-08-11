@@ -41,6 +41,7 @@ class CasualMatchStatePresenter
             'entrant2_name' => $match->opponent ? $this->playerLabel($match->opponent) : 'Esperando rival...',
             'best_of' => $match->best_of,
             'points_to_win' => $match->points_to_win,
+            'wager_points' => $match->wager_points,
             'score_summary' => $match->score_summary,
             'winner_entrant_id' => $match->winner_player_id,
             'games' => $match->games->map(fn ($g) => [

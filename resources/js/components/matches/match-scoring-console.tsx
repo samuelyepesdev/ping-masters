@@ -57,7 +57,7 @@ export function MatchScoringConsole({
     const [forfeitOpen, setForfeitOpen] = useState(false);
 
     useEffect(() => setMatch(initialMatch), [initialMatch]);
-    useMatchChannel(match.id, setMatch, channel);
+    useMatchChannel(match.id, match.status, setMatch, channel);
 
     useEffect(() => onMatchChange?.(match), [match, onMatchChange]);
 

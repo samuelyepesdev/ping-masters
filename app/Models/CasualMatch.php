@@ -21,6 +21,7 @@ class CasualMatch extends Model
         'status',
         'best_of',
         'points_to_win',
+        'wager_points',
         'creator_player_id',
         'opponent_player_id',
         'winner_player_id',
@@ -35,6 +36,7 @@ class CasualMatch extends Model
         return [
             'best_of' => 'integer',
             'points_to_win' => 'integer',
+            'wager_points' => 'integer',
             'started_at' => 'datetime',
             'completed_at' => 'datetime',
         ];

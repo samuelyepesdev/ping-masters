@@ -1,15 +1,17 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/input-error';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { Swords } from 'lucide-react';
-import { FormEventHandler } from 'react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Coins, Swords } from 'lucide-react';
+import { FormEventHandler, useEffect, useState } from 'react';
 
 const MATCH_TYPE_LABELS: Record<string, string> = {
     ranked: 'Clasificatorio',
@@ -32,29 +34,52 @@ interface CasualMatchSummary {
     creator_name: string;
     opponent_name: string | null;
     score_summary: string | null;
+    wager_points: number | null;
     is_mine_to_join: boolean;
+}
+
+interface PendingWager {
+    code: string;
+    wager_points: number;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Retos', href: '/retos' }];
 
-export default function GamesIndex({ matches }: { matches: CasualMatchSummary[] }) {
+export default function GamesIndex({ matches, pendingWager }: { matches: CasualMatchSummary[]; pendingWager?: PendingWager | null }) {
+    const [wagerEnabled, setWagerEnabled] = useState(false);
+    const [wagerDialogOpen, setWagerDialogOpen] = useState(!!pendingWager);
+
+    useEffect(() => setWagerDialogOpen(!!pendingWager), [pendingWager]);
+
     const createForm = useForm({
         match_type: 'friendly',
         best_of: '5',
         points_to_win: '11',
+        wager_points: '',
     });
 
     const joinForm = useForm({ code: '' });
 
     const submitCreate: FormEventHandler = (e) => {
         e.preventDefault();
-        createForm.post(route('games.store'));
+        createForm.transform((data) => ({
+            ...data,
+            wager_points: wagerEnabled && data.match_type === 'ranked' ? data.wager_points : '',
+        }));
+        createForm.post(route('games.store'), {
+            onSuccess: () => setWagerEnabled(false),
+        });
     };
 
     const submitJoin: FormEventHandler = (e) => {
         e.preventDefault();
         joinForm.post(route('games.join'));
     };
+
+    function acceptWager() {
+        if (!pendingWager) return;
+        router.post(route('games.join'), { code: pendingWager.code, accept_wager: true });
+    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -109,6 +134,38 @@ export default function GamesIndex({ matches }: { matches: CasualMatchSummary[] 
                                         />
                                     </div>
                                 </div>
+
+                                {createForm.data.match_type === 'ranked' && (
+                                    <div className="space-y-2 rounded-lg border p-3">
+                                        <label className="flex items-center gap-2 text-sm">
+                                            <Checkbox
+                                                checked={wagerEnabled}
+                                                onCheckedChange={(checked) => setWagerEnabled(checked === true)}
+                                            />
+                                            <Coins className="size-4 text-muted-foreground" />
+                                            Apostar puntos (opcional)
+                                        </label>
+                                        {wagerEnabled && (
+                                            <div className="grid gap-1.5">
+                                                <Label>Puntos a apostar</Label>
+                                                <Input
+                                                    type="number"
+                                                    min={1}
+                                                    max={500}
+                                                    placeholder="Ej: 25"
+                                                    value={createForm.data.wager_points}
+                                                    onChange={(e) => createForm.setData('wager_points', e.target.value)}
+                                                />
+                                                <InputError message={createForm.errors.wager_points} />
+                                                <p className="text-xs text-muted-foreground">
+                                                    Quien gane suma esos puntos de rating extra; quien pierda los resta, además del cambio normal
+                                                    por el resultado. Tu rival debe aceptar la apuesta al unirse.
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
                                 <Button type="submit" disabled={createForm.processing} className="w-full">
                                     <Swords className="size-4" />
                                     Crear reto
@@ -153,6 +210,7 @@ export default function GamesIndex({ matches }: { matches: CasualMatchSummary[] 
                                         <p className="text-sm text-muted-foreground">
                                             {MATCH_TYPE_LABELS[match.match_type]} · Código {match.code}
                                             {match.score_summary ? ` · ${match.score_summary}` : ''}
+                                            {match.wager_points ? ` · Apuesta: ${match.wager_points} pts` : ''}
                                         </p>
                                     </div>
                                     <Badge
@@ -167,6 +225,30 @@ export default function GamesIndex({ matches }: { matches: CasualMatchSummary[] 
                     ))}
                 </div>
             </div>
+
+            <Dialog open={wagerDialogOpen} onOpenChange={setWagerDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Coins className="size-5 text-amber-500" />
+                            Este reto tiene una apuesta
+                        </DialogTitle>
+                    </DialogHeader>
+                    <p className="text-sm text-muted-foreground">
+                        Quien gane el reto <span className="font-semibold text-foreground">{pendingWager?.code}</span> suma{' '}
+                        <span className="font-semibold text-foreground">{pendingWager?.wager_points} puntos</span> de rating extra; quien pierda
+                        los resta, además del cambio normal por el resultado. ¿Aceptas jugarlo bajo estos términos?
+                    </p>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setWagerDialogOpen(false)}>
+                            Cancelar
+                        </Button>
+                        <Button onClick={acceptWager} disabled={joinForm.processing}>
+                            Aceptar y unirme
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }

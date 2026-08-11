@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type MatchScoreState } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { Check, Copy, MessageCircle, X } from 'lucide-react';
+import { Check, Coins, Copy, MessageCircle, X } from 'lucide-react';
 import { useState } from 'react';
 
 const MATCH_TYPE_LABELS: Record<string, string> = {
@@ -48,6 +48,12 @@ export default function GameShow({ match: initialMatch }: { match: MatchScoreSta
                     <Badge variant={match.match_type === 'ranked' ? 'default' : 'secondary'}>
                         {MATCH_TYPE_LABELS[match.match_type ?? 'friendly']}
                     </Badge>
+                    {match.wager_points && (
+                        <Badge className="border-transparent bg-amber-500/15 text-amber-700 dark:text-amber-400">
+                            <Coins className="mr-1 size-3.5" />
+                            Apuesta: {match.wager_points} pts
+                        </Badge>
+                    )}
                     {canCancel && (
                         <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive" onClick={() => setCancelOpen(true)}>
                             <X className="size-4" />
