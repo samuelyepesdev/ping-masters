@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\BlockMaliciousRequests;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -18,6 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // HTTP to the container, so Laravel must trust the X-Forwarded-Proto header to know
         // the original request was HTTPS — otherwise it generates http:// asset/redirect URLs.
         $middleware->trustProxies(at: '*');
+
+        // Runs first, for every request, so bots probing for exploit paths or
+        // hammering the app get a 403/429 before any real work happens.
+        $middleware->prepend(BlockMaliciousRequests::class);
 
         $middleware->web(append: [
             HandleInertiaRequests::class,
