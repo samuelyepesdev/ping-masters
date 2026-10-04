@@ -6,8 +6,48 @@ Construida con **Laravel 12 + Inertia.js + React 19 + TypeScript + Tailwind CSS 
 
 ---
 
+## ¿Qué es Ping Masters?
+
+Ping Masters es **el lugar donde se organiza, se juega y se sigue el tenis de mesa competitivo**. Une en una sola plataforma tres cosas que normalmente están separadas: la **logística del torneo**, el **arbitraje en vivo** y la **vida deportiva del jugador**.
+
+Pensada para clubes, ligas y organizadores que hoy llevan sus torneos con hojas de cálculo, grupos de mensajería y llaves dibujadas a mano, y para jugadores que quieren que sus resultados cuenten más allá de un solo evento.
+
+### Qué resuelve
+
+- **Para el organizador:** crea un torneo, define categorías, abre inscripciones con un formulario a su medida, aprueba participantes, sortea las llaves y obtiene en PDF el cronograma, las llaves, las hojas de puntuación y los certificados. Ya no hay que armar nada a mano.
+- **Para el árbitro:** una consola punto a punto que lleva el marcador, calcula quién saca y aplica la regla de expedite de la ITTF, con deshacer y walkover.
+- **Para el público:** cualquiera puede entrar sin cuenta, ver el torneo, inscribirse y seguir un partido en tiempo real desde el celular.
+- **Para el jugador:** cada partido suma a un **perfil público** con rating ELO, experiencia, nivel, logros, estadísticas y seguidores. Hay un ranking general y **temporadas** que se cierran y se reinician, para que siempre haya una nueva carrera por la cima.
+
+### Qué incluye
+
+| Módulo | En pocas palabras |
+|---|---|
+| **Torneos** | Creación, categorías, formularios de inscripción personalizables, plantillas reutilizables, cupos y aprobación de participantes. |
+| **Sorteos y llaves** | Eliminación simple, doble eliminación, round robin, suizo y grupos + eliminatoria, con siembra y avance automático. |
+| **Marcador en vivo** | Consola del árbitro y transmisión en tiempo real del partido para el público. |
+| **Retos casuales** | Partidos amistosos entre jugadores por código de invitación, con apuesta opcional de puntos que afecta el ELO. |
+| **Ranking y progresión** | ELO, XP, 10 niveles (de Iniciante a Leyenda) y logros desbloqueables. |
+| **Temporadas** | Clasificación archivada al cierre de cada temporada, con histórico consultable. |
+| **Perfiles de jugador** | Estadísticas, forma reciente, informe de scouting y seguidores. |
+| **Documentos PDF** | Cronograma, llaves, hojas de puntuación y certificados. |
+| **Administración y seguridad** | Gestión de usuarios y roles, y bloqueo automático de IPs maliciosas. |
+
+### Quién lo usa
+
+| Rol | Qué hace en la plataforma |
+|---|---|
+| **Visitante** | Explora torneos, ranking y perfiles; se inscribe como invitado; ve partidos en vivo. |
+| **Jugador** | Se inscribe, juega retos, acumula rating, XP y logros. |
+| **Árbitro** | Dirige partidos y registra el marcador. |
+| **Organizador** | Crea y administra torneos, sorteos y plantillas. |
+| **Super admin** | Administra usuarios, temporadas y todo el sistema. |
+
+---
+
 ## Tabla de contenidos
 
+- [¿Qué es Ping Masters?](#qué-es-ping-masters)
 - [Características](#características)
 - [Stack tecnológico](#stack-tecnológico)
 - [Requisitos](#requisitos)
